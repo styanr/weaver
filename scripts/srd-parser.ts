@@ -374,11 +374,7 @@ async function main(): Promise<void> {
       spells.push(spell);
     }
 
-    // await ensureOutputDirectory();
-    // await writeJsonFile('classes.json', classes);
-    // await writeJsonFile('spells.json', spells);
-
-    // await createSchema();
+    await createSchema();
     await loadData(classes, spells);
 
     // await removeTempDirectory();

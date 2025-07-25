@@ -15,6 +15,22 @@ export async function createSchema() {
     await sql.begin(async (tx) => {
       try {
         await tx`
+          DROP SCHEMA IF EXISTS public CASCADE
+        `;
+        await tx`
+         CREATE SCHEMA public 
+        `;
+        await tx`
+          GRANT ALL ON SCHEMA public TO postgres
+        `;
+        await tx`
+          GRANT ALL ON SCHEMA public TO public
+        `;
+      } catch (e) {
+        console.error('❌ schema create error:', e.code, e.message);
+      }
+      try {
+        await tx`
           DROP TYPE IF EXISTS component_type CASCADE
         `;
         await tx`
