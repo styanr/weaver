@@ -70,7 +70,7 @@ export async function createSchema() {
             distance             TEXT             NOT NULL,
             components           component_type[] NOT NULL DEFAULT '{}',
             material_description TEXT,
-            material_price       NUMERIC(10,2)
+            material_price       INTEGER 
           )
         `;
         console.log('✅ table spells created or already exists');

@@ -16,10 +16,10 @@ const TEMP_DEST = 'temp';
 const OUTPUT_DIR = 'output';
 
 const SPELL_PREFIXES = {
-  castingTime: '**Час створення:**',
-  duration: '**Тривалість:**',
-  distance: '**Відстань:**',
-  components: '**Складові:**',
+  castingTime: ['**Час створення:**', '**Час створення**'],
+  duration: ['**Тривалість:**', '**Тривалість**'],
+  distance: ['**Відстань:**', '**Відстань**'],
+  components: ['**Складові:**', '**Складові**'],
 } as const;
 
 const CURRENCY_MULTIPLIERS: Record<string, number> = {
@@ -79,9 +79,19 @@ function cloneSpellsRepository(): void {
 
 const extractLine = (
   lines: string[],
-  prefix: string
+  prefixes: readonly string[]
 ): { index: number; value?: string } => {
-  const index = lines.findIndex((line) => line.startsWith(prefix));
+  let prefix: string | undefined;
+
+  const index = lines.findIndex((line) => {
+    const p = prefixes.find((prefix) => line.startsWith(prefix));
+    if (p) {
+      prefix = p;
+      return true;
+    }
+    return false;
+  });
+
   if (index === -1) {
     return { index: -1 };
   }
