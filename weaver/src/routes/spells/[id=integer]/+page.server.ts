@@ -2,12 +2,21 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { connectToDB } from '$lib/db';
 import { getSpell } from '$lib/spells';
+import type { Spell } from '$lib/types';
 
-export const load: PageServerLoad = async ({ params }) => {
-	const id = Number(params.id);
-	if (!Number.isInteger(id)) throw error(400, 'invalid id');
+export const load: PageServerLoad<{ spell: Spell }> = async ({ params }) => {
+	const id = parseInt(params.id, 10);
 
 	const conn = await connectToDB();
-	const data = await getSpell(conn, id);
-	return data;
+	try {
+		const spell = await getSpell(conn, id);
+		console.log(spell);
+		if (!spell) {
+			throw error(404, `Spell not found`);
+		}
+
+		return { spell };
+	} finally {
+		conn.release();
+	}
 };
