@@ -20,7 +20,7 @@ export interface SpellSlim {
 	materialPrice: number | undefined;
 }
 
-interface PagedResponse<T> {
+export interface PagedResponse<T> {
 	items: T[];
 	totalCount: number;
 	pageNumber: number;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Markdown from '$lib/components/Markdown.svelte';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import type { PageProps } from './$types';
 
@@ -46,7 +47,5 @@
 		<div>{spell.duration}</div>
 	</div>
 
-	<p>
-		{spell.description}
-	</p>
+	<Markdown text={spell.description} class="mt-2" />
 </main>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { marked } from 'marked';
-	let { text } = $props();
+	let { text, class: className = '' } = $props();
 </script>
 
-{@html marked.parseInline(text)}
+<div class={`${className}`}>
+	{@html marked.parseInline(text)}
+</div>

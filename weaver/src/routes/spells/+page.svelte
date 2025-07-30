@@ -1,20 +1,17 @@
 <script lang="ts">
+	// TODO: some weird stuff with restoring state (goind backward from the spell page)
+	// UPD: the page is being reset because other the params are not null, need to check that
 	import { page } from '$app/state';
 	import debounce from 'lodash.debounce';
 	import { onDestroy } from 'svelte';
-	import type { SpellSlim } from '../api/spells/+server';
+	import type { SpellSlim, PagedResponse } from '../api/spells/+server';
 	import Markdown from '$lib/components/Markdown.svelte';
 	import { Heart } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
-	import { goto, replaceState } from '$app/navigation';
-
-	interface SearchResult {
-		items: SpellSlim[];
-		totalCount: number;
-		pageNumber: number;
-		pageSize: number;
-	}
+	import { goto } from '$app/navigation';
+	import Pagination from '$lib/components/Pagination.svelte';
+	import { browser } from '$app/environment';
 
 	const classFilters = [
 		'варвар',
@@ -34,82 +31,83 @@
 	const levelFilters = Array.from({ length: 9 }, (_, i) => i + 1);
 
 	const query = $derived(page.url.searchParams.get('query'));
-	const selectedClass = $derived(page.url.searchParams.get('class'));
-	const selectedLevel = $derived(page.url.searchParams.get('level'));
-	let inputValue = $state(query ?? '');
-	let selClass = $state<string | null>(selectedClass);
-	let selLevel = $state<number | null>(selectedLevel ? Number(selectedLevel) : null);
+	const paramClass = $derived(page.url.searchParams.get('class'));
+	const paramLevel = $derived(page.url.searchParams.get('level'));
+	const paramPage = $derived(page.url.searchParams.get('page'));
 
-	let searchResults = $state<SearchResult | null>(null);
+	let inputValue = $state(query ?? '');
+	let debouncedQuery = $state(query ?? '');
+	let selectedClass = $state<string | null>(paramClass);
+	let selectedLevel = $state<number | null>(paramLevel ? Number(paramLevel) : null);
+	let selectedPage = $state<number | null>(paramPage ? Number(paramPage) : null);
+
 	let isLoading = $state(false);
 	let lastError = $state<string | null>(null);
+	let searchResult = $state<PagedResponse<SpellSlim> | null>(null);
+
+	const { data } = $props();
+
+	$effect(() => {
+		if (data.searchResult) {
+			isLoading = true;
+			lastError = null;
+
+			const handleResult = (result: PagedResponse<SpellSlim>) => {
+				searchResult = result;
+				isLoading = false;
+			};
+
+			const handleError = (error: any) => {
+				lastError = error.message || 'An error occurred';
+				isLoading = false;
+			};
+
+			if (data.searchResult instanceof Promise) {
+				data.searchResult.then(handleResult).catch(handleError);
+			} else {
+				handleResult(data.searchResult);
+			}
+		}
+	});
 
 	const savedSpellsStorage = new LocalStorage<number[]>('savedSpells', []);
 
 	const isSaved = (id: number) => savedSpellsStorage.current.includes(id);
 
-	const search = async (params: Record<string, any>): Promise<SearchResult> => {
-		const url = '/api/spells?' + new URLSearchParams(params as Record<string, string>).toString();
-		try {
-			const response = await fetch(url);
-			if (!response.ok) {
-				throw new Error(`Response status: ${response.status}`);
-			}
-			return await response.json();
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const debouncedUpdate = debounce(
-		async (query: string, classFilter: string | null, levelFilter: number | null) => {
-			const url = new URL(window.location.href);
-			url.searchParams.set('query', query);
-
-			classFilter ? url.searchParams.set('class', classFilter) : url.searchParams.delete('class');
-
-			levelFilter !== null
-				? url.searchParams.set('level', String(levelFilter))
-				: url.searchParams.delete('level');
-
-			goto(url.toString(), {
-				replaceState: true,
-				noScroll: true,
-				keepFocus: true
-			});
-
-			// if (!query.trim()) {
-			// 	searchResults = null;
-			// 	isLoading = false;
-			// 	lastError = null;
-			// 	return;
-			// }
-
-			const params: Record<string, string> = { query: query.trim() };
-			if (classFilter) params.class = classFilter;
-			if (levelFilter !== null) params.level = String(levelFilter);
-
-			console.log(params);
-			isLoading = true;
-			lastError = null;
-			try {
-				const result = await search(params);
-				searchResults = result;
-			} catch (err: any) {
-				lastError = err.message ?? String(err);
-			} finally {
-				isLoading = false;
-			}
-		},
-		300
-	);
+	const updateDebouncedQuery = debounce((newValue: string) => {
+		debouncedQuery = newValue;
+	}, 300);
 
 	$effect(() => {
-		debouncedUpdate(inputValue, selClass, selLevel);
+		updateDebouncedQuery(inputValue);
 	});
 
-	onDestroy(() => debouncedUpdate.cancel());
+	onDestroy(() => {
+		updateDebouncedQuery.cancel();
+	});
+
+	$effect(() => {
+		if (inputValue || selectedClass || selectedLevel) {
+			selectedPage = 1;
+		}
+	});
+
+	$effect(() => {
+		const url = new URL(page.url);
+		const params = url.searchParams;
+
+		debouncedQuery ? params.set('query', debouncedQuery) : params.delete('query');
+		selectedClass ? params.set('class', selectedClass) : params.delete('class');
+		selectedLevel ? params.set('level', String(selectedLevel)) : params.delete('level');
+
+		selectedPage && selectedPage > 1
+			? params.set('page', String(selectedPage))
+			: params.delete('page');
+
+		if (page.url.href != url.href) {
+			goto(url, { replaceState: true, keepFocus: true, noScroll: false });
+		}
+	});
 
 	const toggleSpell = (id: number) => {
 		if (!savedSpellsStorage.current.includes(id)) {
@@ -124,7 +122,7 @@
 
 <div class="list w-[70rem] font-garamond text-2xl">
 	<div class="m-auto mb-2 text-6xl font-bold uppercase">Зміст</div>
-	<div class="m-auto mb-10 text-xl font-bold uppercase italic opacity-80">Index Arcana</div>
+	<div class="m-auto mb-10 text-xl font-bold uppercase italic opacity-80">Index Arcanum</div>
 	<label class="input mb-2 w-full">
 		<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 			<g
@@ -141,7 +139,7 @@
 		<input type="search" placeholder="Пошук" class="font-sans" bind:value={inputValue} />
 	</label>
 	<form class="filter mb-2">
-		<input class="btn btn-square" type="reset" value="×" onclick={() => (selClass = null)} />
+		<input class="btn btn-square" type="reset" value="×" onclick={() => (selectedClass = null)} />
 
 		{#each classFilters as c}
 			<input
@@ -150,13 +148,13 @@
 				name="class"
 				aria-label={c}
 				value={c}
-				bind:group={selClass}
+				bind:group={selectedClass}
 			/>
 		{/each}
 	</form>
 
 	<form class="filter mb-5">
-		<input class="btn btn-square" type="reset" value="×" onclick={() => (selLevel = null)} />
+		<input class="btn btn-square" type="reset" value="×" onclick={() => (selectedLevel = null)} />
 
 		{#each levelFilters as l}
 			<input
@@ -165,12 +163,16 @@
 				name="level"
 				aria-label={l.toString()}
 				value={l}
-				bind:group={selLevel}
+				bind:group={selectedLevel}
 			/>
 		{/each}
 	</form>
+
+	<!-- Loading indicator -->
 	{#if isLoading}
-		<div class="pointer-events-none fixed inset-0 flex items-center justify-center bg-base-100/60">
+		<div
+			class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-base-100/60"
+		>
 			<svg class="h-12 w-12 animate-spin" viewBox="0 0 24 24">
 				<circle
 					class="opacity-25"
@@ -185,18 +187,19 @@
 			</svg>
 		</div>
 	{/if}
+
 	{#if lastError}
 		<span style="color: red;">Помилка: {lastError}</span>
-	{:else if searchResults}
-		{#if searchResults.items.length > 0}
-			{#each searchResults.items as spell, i}
+	{:else if searchResult}
+		{#if searchResult.items.length > 0}
+			{#each searchResult.items as spell, i}
 				<div
 					class="list-row flex items-center gap-10 transition-all hover:scale-105 hover:shadow-2xl"
 				>
 					<a href={`/spells/${spell.id}`} class="flex flex-1 items-center gap-10 no-underline">
 						<div class="flex flex-row items-center justify-center">
-							<div class="w-12 text-3xl font-bold whitespace-nowrap">
-								{romanize(i + 1)}
+							<div class="w-30 text-3xl font-bold whitespace-nowrap">
+								{romanize(i + 1 + searchResult.pageSize * (searchResult.pageNumber - 1))}
 							</div>
 
 							<div class="flex h-8 w-8 items-center justify-center">
@@ -243,10 +246,15 @@
 					</button>
 				</div>
 			{/each}
-		{:else}
-			<span>Нічого не знайдено</span>
+			<Pagination
+				pageSize={searchResult.pageSize}
+				currentPage={searchResult.pageNumber}
+				totalCount={searchResult.totalCount}
+				class="mt-5"
+				onChange={(newPage: number) => {
+					selectedPage = newPage;
+				}}
+			/>
 		{/if}
-		<!-- {:else if inputValue.trim() === ''} -->
-		<!-- 	<span>Пошук не розпочато</span> -->
 	{/if}
 </div>
