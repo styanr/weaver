@@ -4,4 +4,6 @@
 	let { children } = $props();
 </script>
 
-{@render children()}
+<div class="flex flex-col items-center p-5">
+	{@render children()}
+</div>

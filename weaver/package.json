@@ -22,6 +22,7 @@
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "^4.1.11",
+		"@types/lodash.debounce": "^4.0.9",
 		"@types/pg": "^8.15.4",
 		"daisyui": "^5.0.47",
 		"eslint": "^9.18.0",
@@ -39,6 +40,9 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"lodash.debounce": "^4.0.8",
+		"lucide-svelte": "^0.534.0",
+		"marked": "^16.1.1",
 		"pg": "^8.16.3"
 	}
 }
