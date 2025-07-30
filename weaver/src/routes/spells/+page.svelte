@@ -34,9 +34,11 @@
 	const levelFilters = Array.from({ length: 9 }, (_, i) => i + 1);
 
 	const query = $derived(page.url.searchParams.get('query'));
+	const selectedClass = $derived(page.url.searchParams.get('class'));
+	const selectedLevel = $derived(page.url.searchParams.get('level'));
 	let inputValue = $state(query ?? '');
-	let selClass = $state<string | null>(null);
-	let selLevel = $state<number | null>(null);
+	let selClass = $state<string | null>(selectedClass);
+	let selLevel = $state<number | null>(selectedLevel ? Number(selectedLevel) : null);
 
 	let searchResults = $state<SearchResult | null>(null);
 	let isLoading = $state(false);
@@ -76,17 +78,19 @@
 				noScroll: true,
 				keepFocus: true
 			});
-			if (!query.trim()) {
-				searchResults = null;
-				isLoading = false;
-				lastError = null;
-				return;
-			}
+
+			// if (!query.trim()) {
+			// 	searchResults = null;
+			// 	isLoading = false;
+			// 	lastError = null;
+			// 	return;
+			// }
 
 			const params: Record<string, string> = { query: query.trim() };
 			if (classFilter) params.class = classFilter;
 			if (levelFilter !== null) params.level = String(levelFilter);
 
+			console.log(params);
 			isLoading = true;
 			lastError = null;
 			try {
@@ -242,7 +246,7 @@
 		{:else}
 			<span>Нічого не знайдено</span>
 		{/if}
-	{:else if inputValue.trim() === ''}
-		<span>Пошук не розпочато</span>
+		<!-- {:else if inputValue.trim() === ''} -->
+		<!-- 	<span>Пошук не розпочато</span> -->
 	{/if}
 </div>

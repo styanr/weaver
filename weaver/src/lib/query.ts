@@ -18,11 +18,15 @@ export class QueryBuilder {
 		const queryText = this.clauses.map((c) => c.text).join(' ');
 		const allValues = this.clauses.flatMap((c) => c.values).filter((c) => c !== undefined);
 
+		console.log(queryText);
+		console.log(allValues);
+
 		const paramRegex = /\$\d*/g;
 
 		const matches = queryText.match(paramRegex);
 
-		if (matches?.length !== allValues.length) throw new Error('Invalid parameters count passed.');
+		const matchesLength = matches?.length ?? 0;
+		if (matchesLength !== allValues.length) throw new Error('Invalid parameters count passed.');
 
 		let paramCounter = 1;
 		const paramText = queryText.replace(paramRegex, () => {
