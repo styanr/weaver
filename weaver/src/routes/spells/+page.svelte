@@ -7,6 +7,7 @@
 	import { Heart } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
+	import { goto, replaceState } from '$app/navigation';
 
 	interface SearchResult {
 		items: SpellSlim[];
@@ -15,8 +16,27 @@
 		pageSize: number;
 	}
 
+	const classFilters = [
+		'варвар',
+		'бард',
+		'клірик',
+		'друїд',
+		'боєць',
+		'монах',
+		'паладин',
+		'рейнджер',
+		'пройдисвіт',
+		'заклинач',
+		'чаклун',
+		'чарівник'
+	];
+
+	const levelFilters = Array.from({ length: 9 }, (_, i) => i + 1);
+
 	const query = $derived(page.url.searchParams.get('query'));
 	let inputValue = $state(query ?? '');
+	let selClass = $state<string | null>(null);
+	let selLevel = $state<number | null>(null);
 
 	let searchResults = $state<SearchResult | null>(null);
 	let isLoading = $state(false);
@@ -40,37 +60,52 @@
 		}
 	};
 
-	const debouncedUpdate = debounce(async (v: string) => {
-		replaceQuery(v);
-		if (!v) {
-			searchResults = null;
-			isLoading = false;
+	const debouncedUpdate = debounce(
+		async (query: string, classFilter: string | null, levelFilter: number | null) => {
+			const url = new URL(window.location.href);
+			url.searchParams.set('query', query);
+
+			classFilter ? url.searchParams.set('class', classFilter) : url.searchParams.delete('class');
+
+			levelFilter !== null
+				? url.searchParams.set('level', String(levelFilter))
+				: url.searchParams.delete('level');
+
+			goto(url.toString(), {
+				replaceState: true,
+				noScroll: true,
+				keepFocus: true
+			});
+			if (!query.trim()) {
+				searchResults = null;
+				isLoading = false;
+				lastError = null;
+				return;
+			}
+
+			const params: Record<string, string> = { query: query.trim() };
+			if (classFilter) params.class = classFilter;
+			if (levelFilter !== null) params.level = String(levelFilter);
+
+			isLoading = true;
 			lastError = null;
-			return;
-		}
-		isLoading = true;
-		lastError = null;
-		try {
-			const result = await search({ query: v });
-			searchResults = result;
-		} catch (error) {
-			lastError = error instanceof Error ? error.message : String(error);
-		} finally {
-			isLoading = false;
-		}
-	}, 300);
+			try {
+				const result = await search(params);
+				searchResults = result;
+			} catch (err: any) {
+				lastError = err.message ?? String(err);
+			} finally {
+				isLoading = false;
+			}
+		},
+		300
+	);
 
 	$effect(() => {
-		debouncedUpdate(inputValue);
+		debouncedUpdate(inputValue, selClass, selLevel);
 	});
 
 	onDestroy(() => debouncedUpdate.cancel());
-
-	const replaceQuery = (newQuery: string) => {
-		const url = new URL(window.location.href);
-		url.searchParams.set('query', newQuery);
-		history.replaceState({}, '', url.toString());
-	};
 
 	const toggleSpell = (id: number) => {
 		if (!savedSpellsStorage.current.includes(id)) {
@@ -86,9 +121,65 @@
 <div class="list w-[70rem] font-garamond text-2xl">
 	<div class="m-auto mb-2 text-6xl font-bold uppercase">Зміст</div>
 	<div class="m-auto mb-10 text-xl font-bold uppercase italic opacity-80">Index Arcana</div>
-	<input type="text" class="input w-full font-sans" bind:value={inputValue} />
+	<label class="input mb-2 w-full">
+		<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			<g
+				stroke-linejoin="round"
+				stroke-linecap="round"
+				stroke-width="2.5"
+				fill="none"
+				stroke="currentColor"
+			>
+				<circle cx="11" cy="11" r="8"></circle>
+				<path d="m21 21-4.3-4.3"></path>
+			</g>
+		</svg>
+		<input type="search" placeholder="Пошук" class="font-sans" bind:value={inputValue} />
+	</label>
+	<form class="filter mb-2">
+		<input class="btn btn-square" type="reset" value="×" onclick={() => (selClass = null)} />
+
+		{#each classFilters as c}
+			<input
+				class="btn capitalize"
+				type="radio"
+				name="class"
+				aria-label={c}
+				value={c}
+				bind:group={selClass}
+			/>
+		{/each}
+	</form>
+
+	<form class="filter mb-5">
+		<input class="btn btn-square" type="reset" value="×" onclick={() => (selLevel = null)} />
+
+		{#each levelFilters as l}
+			<input
+				class="btn"
+				type="radio"
+				name="level"
+				aria-label={l.toString()}
+				value={l}
+				bind:group={selLevel}
+			/>
+		{/each}
+	</form>
 	{#if isLoading}
-		<span>Завантаження...</span>
+		<div class="pointer-events-none fixed inset-0 flex items-center justify-center bg-base-100/60">
+			<svg class="h-12 w-12 animate-spin" viewBox="0 0 24 24">
+				<circle
+					class="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					stroke-width="4"
+					fill="none"
+				/>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+			</svg>
+		</div>
 	{/if}
 	{#if lastError}
 		<span style="color: red;">Помилка: {lastError}</span>

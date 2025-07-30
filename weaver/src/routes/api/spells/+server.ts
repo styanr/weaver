@@ -9,7 +9,7 @@ export interface SpellSlim {
 	id: number;
 	school: string;
 	level: number;
-	classes: number[];
+	classes: string[];
 	title: string;
 	title_ua: string;
 	casting_time: string;
@@ -31,53 +31,65 @@ export const GET: RequestHandler = async ({ url }) => {
 	const conn = await connectToDB();
 
 	const searchQueryParam = url.searchParams.get('query') ?? '';
+	const classParam = url.searchParams.get('class');
+	const levelParam = url.searchParams.get('level');
 	const page = url.searchParams.get('page') ? Number(url.searchParams.get('page')) : 1;
 
 	try {
-		const filterClause = {
-			text: 'WHERE title_ua ILIKE $',
-			values: [`${searchQueryParam}%`]
-		};
+		const filterParts: string[] = [];
+		const filterValues: any[] = [];
 
-		const orderClause = {
-			text: 'ORDER by id'
-		};
+		if (searchQueryParam !== '') {
+			filterParts.push('title_ua ILIKE $');
+			filterValues.push(`${searchQueryParam}%`);
+		}
+		if (classParam) {
+			filterParts.push('c.name_ua = $');
+			filterValues.push(classParam);
+		}
+		if (levelParam) {
+			filterParts.push('spells.level = $');
+			filterValues.push(Number(levelParam));
+		}
 
+		const filterClause =
+			filterParts.length > 0
+				? { text: `WHERE ${filterParts.join(' AND ')}`, values: filterValues }
+				: { text: '', values: [] };
+
+		const orderClause = { text: 'ORDER BY id' };
 		const pagingClause = {
 			text: 'OFFSET $ LIMIT $',
 			values: [PAGE_SIZE * (page - 1), PAGE_SIZE]
 		};
+		const joinClause = {
+			text: 'INNER JOIN spells_classes sc ON spells.id = sc.spell_id INNER JOIN classes c ON sc.class_id = c.id'
+		};
+		const aggregateClause = { text: 'GROUP BY spells.id' };
 
 		const countQueryBuilder = new QueryBuilder().withClause({
 			text: 'SELECT COUNT(*) FROM public.spells AS spells'
 		});
+		if (classParam) countQueryBuilder.withClause(joinClause);
+		const countQuery = countQueryBuilder.withClause(filterClause).build();
 
 		const searchQueryBuilder = new QueryBuilder().withClause({
 			text: `
         SELECT 
-          spells.id, 
-          spells.school, 
-          spells.level, 
-          spells.title, 
-          spells.title_ua, 
-          spells.casting_time, 
-          spells.duration, 
-          spells.distance, 
-          spells.material_description, 
-          spells.material_price, 
-          array_to_json(array_agg(c.name_ua)) AS classes, 
-          array_to_json(components) AS components 
+          spells.id,
+          spells.school,
+          spells.level,
+          spells.title,
+          spells.title_ua,
+          spells.casting_time,
+          spells.duration,
+          spells.distance,
+          spells.material_description,
+          spells.material_price,
+          array_to_json(array_agg(c.name_ua)) AS classes,
+          array_to_json(components) AS components
         FROM public.spells AS spells`
 		});
-
-		const joinClause = {
-			text: 'INNER JOIN spells_classes sc ON spells.id = sc.spell_id INNER JOIN classes c ON sc.class_id = c.id'
-		};
-		const aggregateClause = {
-			text: 'GROUP BY spells.id'
-		};
-
-		const countQuery = countQueryBuilder.withClause(filterClause).build();
 
 		const searchQuery = searchQueryBuilder
 			.withClause(joinClause)
@@ -87,15 +99,10 @@ export const GET: RequestHandler = async ({ url }) => {
 			.withClause(pagingClause)
 			.build();
 
-		console.log(searchQuery);
-
 		const countResult = await conn.query(countQuery);
-
 		const result = await conn.query(searchQuery);
-		console.log(result);
 
-		const response = result.rows.length > 0 ? result.rows : [];
-		const spells: SpellSlim[] = response.map((item) => ({
+		const spells: SpellSlim[] = result.rows.map((item) => ({
 			id: item.id,
 			school: item.school,
 			level: item.level,
@@ -107,7 +114,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			distance: item.distance,
 			components: item.components,
 			materialDescription: item.material_description,
-			materialPrice: item.material_description
+			materialPrice: item.material_price
 		}));
 
 		const payload: PagedResponse<SpellSlim> = {
@@ -116,8 +123,6 @@ export const GET: RequestHandler = async ({ url }) => {
 			pageNumber: page,
 			pageSize: PAGE_SIZE
 		};
-
-		console.log(payload);
 
 		return json(payload);
 	} finally {
