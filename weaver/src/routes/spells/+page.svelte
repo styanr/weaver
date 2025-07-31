@@ -28,14 +28,15 @@
 		'чарівник'
 	];
 
-	const levelFilters = Array.from({ length: 9 }, (_, i) => i + 1);
+	// TODO: 0 broken
+	const levelFilters = Array.from({ length: 10 }, (_, i) => i);
 
 	const query = $derived(page.url.searchParams.get('query'));
 	const paramClass = $derived(page.url.searchParams.get('class'));
 	const paramLevel = $derived(page.url.searchParams.get('level'));
 	const paramPage = $derived(page.url.searchParams.get('page'));
 
-	let inputValue = $state(query ?? '');
+	let inputValue = $state<string | null>(query);
 	let debouncedQuery = $state(query ?? '');
 	let selectedClass = $state<string | null>(paramClass);
 	let selectedLevel = $state<number | null>(paramLevel ? Number(paramLevel) : null);
@@ -87,7 +88,7 @@
 	});
 
 	$effect(() => {
-		if (inputValue || selectedClass || selectedLevel) {
+		if (inputValue != query || selectedClass != paramClass || selectedLevel != paramLevel) {
 			selectedPage = 1;
 		}
 	});
