@@ -6,12 +6,13 @@
 	import { onDestroy } from 'svelte';
 	import type { SpellSlim, PagedResponse } from '../api/spells/+server';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { Heart } from 'lucide-svelte';
+	import { Bookmark, Heart } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import { browser } from '$app/environment';
+	import Ribbon from '$lib/components/Ribbon.svelte';
 
 	const classFilters = [
 		'варвар',
@@ -80,7 +81,7 @@
 	}, 300);
 
 	$effect(() => {
-		updateDebouncedQuery(inputValue);
+		updateDebouncedQuery(inputValue ?? '');
 	});
 
 	onDestroy(() => {
@@ -99,7 +100,7 @@
 
 		debouncedQuery ? params.set('query', debouncedQuery) : params.delete('query');
 		selectedClass ? params.set('class', selectedClass) : params.delete('class');
-		selectedLevel ? params.set('level', String(selectedLevel)) : params.delete('level');
+		selectedLevel !== null ? params.set('level', String(selectedLevel)) : params.delete('level');
 
 		selectedPage && selectedPage > 1
 			? params.set('page', String(selectedPage))
@@ -121,7 +122,14 @@
 	};
 </script>
 
-<div class="list w-[70rem] font-garamond text-2xl">
+<div class="list relative w-[70rem] font-garamond text-2xl">
+	<a
+		href="/spells/saved"
+		class="group absolute -top-6 right-5 flex flex-row items-center justify-start gap-x-6"
+	>
+		<div class="text-xl font-bold uppercase italic opacity-60">GRIMOIRE</div>
+		<Ribbon class="" />
+	</a>
 	<div class="m-auto mb-2 text-6xl font-bold uppercase">Зміст</div>
 	<div class="m-auto mb-10 text-xl font-bold uppercase italic opacity-80">Index Arcanum</div>
 	<label class="input mb-2 w-full">
@@ -195,7 +203,7 @@
 		{#if searchResult.items.length > 0}
 			{#each searchResult.items as spell, i}
 				<div
-					class="list-row flex items-center gap-10 transition-all hover:scale-105 hover:shadow-2xl"
+					class="list-row mb-5 flex items-center gap-10 bg-base-100 px-12 transition-all hover:scale-105 hover:shadow-xl"
 				>
 					<a href={`/spells/${spell.id}`} class="flex flex-1 items-center gap-10 no-underline">
 						<div class="flex flex-row items-center justify-center">
@@ -230,7 +238,7 @@
 								</div>
 								{#if spell.materialDescription}
 									<div>
-										Матеріали: <Markdown text={spell.materialDescription} />
+										Матеріали: <Markdown text={spell.materialDescription} class="inline" />
 									</div>
 								{/if}
 							</div>
@@ -240,7 +248,7 @@
 						class="group btn btn-circle btn-xl hover:inset-shadow-sm"
 						onclick={() => toggleSpell(spell.id)}
 					>
-						<Heart
+						<Bookmark
 							class="transition-all group-hover:scale-125 group-active:scale-150"
 							fill={isSaved(spell.id) ? 'current' : 'none'}
 						/>
