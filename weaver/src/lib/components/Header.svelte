@@ -3,6 +3,6 @@
 </script>
 
 <div class={className}>
-	<div class="mb-2 text-6xl font-bold uppercase">{title}</div>
+	<div class="mb-2 text-4xl font-bold uppercase md:text-6xl">{title}</div>
 	<div class="small-caps text-2xl italic opacity-80">{subtitle}</div>
 </div>

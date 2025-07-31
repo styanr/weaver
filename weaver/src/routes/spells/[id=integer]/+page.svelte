@@ -4,8 +4,8 @@
 	import { LocalStorage } from '$lib/storage.svelte';
 	import type { PageProps } from './$types';
 	import type { Component } from '$lib/types';
-	import Ribbon from '$lib/components/Ribbon.svelte';
-	import { Bookmark } from 'lucide-svelte';
+	import RibbonLink from '$lib/components/RibbonLink.svelte';
+	import SaveButton from '$lib/components/SaveButton.svelte';
 	let { data }: PageProps = $props();
 	let spell = data.spell;
 
@@ -37,48 +37,28 @@
 	};
 </script>
 
-<a
-	href="/spells"
-	class="group absolute -top-0 left-5 z-50 flex flex-row items-center justify-start gap-x-6 transition-all"
->
-	<Ribbon class="" />
-	<div
-		class="small-caps text-2xl italic opacity-0 transition-all duration-300 group-hover:opacity-70"
-	>
-		Зміст
-	</div>
-</a>
+<RibbonLink href="/spells" title="Зміст" position="left" class="absolute -top-0 left-5" />
 
-<a
-	href="/spells/saved"
-	class="group absolute -top-0 right-5 z-50 flex flex-row items-center justify-start gap-x-6 transition-all"
->
-	<div
-		class="small-caps text-2xl italic opacity-0 transition-all duration-300 group-hover:opacity-70"
-	>
-		Гримуар
-	</div>
-	<Ribbon class="" />
-</a>
+<RibbonLink href="/spells/saved" title="Гримуар" position="right" class="absolute -top-0 right-5" />
 
-<div class="x-8 mx-auto py-6">
+<SaveButton
+	{isSaved}
+	onToggle={() => toggleSpell(spell.id)}
+	class="fixed right-5 bottom-0 mb-6 border-base-content/20 p-7 shadow-xl/30 shadow-base-content md:hidden"
+/>
+<div class="mx-auto mt-10 py-6 pb-15 md:mt-0 md:pb-0">
 	<div class="flex w-full justify-center">
-		<div class="relative mb-8 flex w-fit justify-center gap-10">
+		<div class="relative mb-8 flex w-fit flex-col justify-center gap-10 md:flex-row">
 			<Header
 				title={`${spell.title_ua}`}
 				subtitle={spell.title}
 				class="flex w-fit flex-col items-center justify-center"
 			/>
-			<button
-				class="group btn absolute -top-0 -right-20 btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30 active:scale-95"
-				onclick={() => toggleSpell(spell.id)}
-			>
-				<Bookmark
-					class="text-base-content transition-all group-hover:scale-110 group-active:scale-125"
-					fill={isSaved ? 'currentColor' : 'none'}
-					stroke-width={isSaved ? 0 : 1.5}
-				/>
-			</button>
+			<SaveButton
+				{isSaved}
+				onToggle={() => toggleSpell(spell.id)}
+				class="absolute -top-0 -right-20 hidden md:block"
+			/>
 		</div>
 	</div>
 	<div class="mb-6 text-center capitalize italic opacity-75">

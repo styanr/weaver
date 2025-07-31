@@ -1,8 +1,9 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
-	import Ribbon from '$lib/components/Ribbon.svelte';
+	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { Bookmark, ChevronDown } from 'lucide-svelte';
+	import SaveButton from '$lib/components/SaveButton.svelte';
+	import { ChevronDown } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { slide } from 'svelte/transition';
@@ -106,17 +107,9 @@
 	};
 </script>
 
-<a
-	href="/spells"
-	class="group absolute top-0 right-5 z-50 flex flex-row items-center justify-start gap-x-6"
->
-	<div class="small-caps text-2xl italic opacity-0 transition-all group-hover:opacity-60">
-		Зміст
-	</div>
-	<Ribbon class="" />
-</a>
+<RibbonLink href="/spells" title="Зміст" position="right" class="absolute -top-0 right-5" />
 
-<div class="list relative w-full text-2xl">
+<div class="list relative mt-10 w-full py-6 text-2xl md:mt-0">
 	<Header
 		title="Гримуар"
 		subtitle="Grimoire Arcanis"
@@ -124,9 +117,7 @@
 	/>
 
 	{#if isLoading}
-		<div
-			class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-base-100/60"
-		>
+		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
 			<svg class="h-12 w-12 animate-spin" viewBox="0 0 24 24">
 				<circle
 					class="opacity-25"
@@ -157,8 +148,10 @@
 						onclick={() => toggleSection(level)}
 					>
 						<div class="flex items-center gap-3">
-							<h2 class="text-3xl font-bold">{getLevelTitle(level)}</h2>
-							<span class="text-xl opacity-70">({getSpellCountInLevel(level)})</span>
+							<h2 class="text-2xl font-bold md:text-3xl">{getLevelTitle(level)}</h2>
+							<span class="badge text-lg opacity-70 badge-neutral md:badge-xl"
+								>{getSpellCountInLevel(level)}</span
+							>
 						</div>
 						<div class="transition-transform duration-200" class:rotate-180={!isCollapsed}>
 							<ChevronDown class="h-6 w-6" />
@@ -169,16 +162,18 @@
 						<div class="mt-4 space-y-5" transition:slide={{ duration: 300, easing: quintOut }}>
 							{#each spells as spell, spellIndex}
 								<div
-									class="list-row flex items-center gap-10 bg-base-100 px-12 transition-all hover:scale-105 hover:shadow-xl"
+									class="list-row mb-5 flex items-center gap-10 bg-base-100 px-12 transition-all hover:scale-105 hover:shadow-xl"
 									style="animation-delay: {spellIndex * 50}ms"
 									class:animate-fade-in={!isCollapsed}
 								>
 									<a
 										href={`/spells/${spell.id}`}
-										class="flex flex-1 items-center gap-10 no-underline"
+										class="flex flex-1 flex-col-reverse items-center gap-10 no-underline md:flex-row"
 									>
-										<div class="flex flex-row items-center justify-center">
-											<div class="w-30 text-3xl font-bold whitespace-nowrap">
+										<div
+											class="flex flex-col-reverse items-center justify-center gap-3 md:flex-row md:gap-0"
+										>
+											<div class="text-xl font-bold whitespace-nowrap md:w-30 md:text-3xl">
 												{romanize(getSpellIndexInLevel(spell, level))}
 											</div>
 
@@ -191,14 +186,23 @@
 											</div>
 										</div>
 										<div class="flex w-full flex-col">
-											<h3
-												class="mt-2 mb-3 text-3xl font-bold first-letter:float-left first-letter:mr-1 first-letter:text-5xl first-letter:leading-none first-letter:font-extrabold"
-											>
-												{spell.title_ua}
-												<span class="small-caps ml-1 text-2xl font-normal text-base-content-500"
-													>"{spell.title}"</span
+											<div class="flex items-start justify-between">
+												<h3
+													class="mt-2 mb-3 text-3xl font-bold first-letter:mr-0.5 first-letter:inline-block first-letter:align-text-bottom first-letter:text-4xl/1 first-letter:leading-none first-letter:font-extrabold"
 												>
-											</h3>
+													{spell.title_ua}
+													<div
+														class="small-caps mt-4 text-xl font-normal text-base-content-500 md:mt-0 md:ml-1 md:inline md:text-2xl"
+													>
+														"{spell.title}"
+													</div>
+												</h3>
+												<SaveButton
+													isSaved={isSaved(spell.id)}
+													onToggle={() => toggleSpell(spell.id)}
+													class="mt-2 md:hidden"
+												/>
+											</div>
 											<div class="mb-4 flex flex-col gap-3">
 												<div class="capitalize italic">
 													{#each spell.classes as casterClass, i}
@@ -217,15 +221,11 @@
 											</div>
 										</div>
 									</a>
-									<button
-										class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30 active:scale-95"
-										onclick={() => toggleSpell(spell.id)}
-									>
-										<Bookmark
-											class="text-base-content transition-all group-hover:scale-110 group-active:scale-125"
-											fill={isSaved(spell.id) ? 'current' : 'none'}
-										/>
-									</button>
+									<SaveButton
+										isSaved={isSaved(spell.id)}
+										onToggle={() => toggleSpell(spell.id)}
+										class="hidden md:block"
+									/>
 								</div>
 							{/each}
 						</div>

@@ -3,11 +3,11 @@
 </script>
 
 <div class={`group text-base-content   ${className}`}>
-	<div class={`h-2 w-[40px]  bg-current transition-all group-hover:h-10`}></div>
+	<div class={`h-2 w-[40px]  bg-current transition-all group-hover:h-10 group-active:h-10`}></div>
 	<div class="relative h-fit">
 		<div
 			aria-hidden="true"
-			class="absolute -translate-y-2 opacity-60 transition-all group-hover:translate-0"
+			class="absolute -translate-y-2 opacity-60 transition-all group-hover:translate-0 group-active:translate-0"
 		>
 			<svg
 				width={40}
@@ -34,7 +34,7 @@
 				version="1.1"
 				xmlns="http://www.w3.org/2000/svg"
 				xmlns:xlink="http://www.w3.org/1999/xlink"
-				class="transition-all group-hover:drop-shadow-2xl"
+				class="group-active::drop-shadow-2xl transition-all group-hover:drop-shadow-2xl"
 			>
 				<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
 					<g id="Icon-Set-Filled" fill="currentColor">

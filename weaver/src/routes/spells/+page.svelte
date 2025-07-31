@@ -5,12 +5,12 @@
 	import type { PagedResponse } from '../api/spells/+server';
 	import type { SpellSlim } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { Bookmark } from 'lucide-svelte';
+	import SaveButton from '$lib/components/SaveButton.svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/Pagination.svelte';
-	import Ribbon from '$lib/components/Ribbon.svelte';
+	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import Header from '$lib/components/Header.svelte';
 
 	const classFilters = [
@@ -120,23 +120,15 @@
 	};
 </script>
 
-<a
-	href="/spells/saved"
-	class="group absolute -top-0 right-5 z-50 flex flex-row items-center justify-start gap-x-6"
->
-	<div class="small-caps text-2xl italic opacity-0 transition-all group-hover:opacity-60">
-		Гримуар
-	</div>
-	<Ribbon class="" />
-</a>
+<RibbonLink href="/spells/saved" title="Гримуар" position="right" class="absolute -top-0 right-5" />
 
-<div class="list relative w-full text-2xl">
+<div class="list relative mt-10 w-full py-6 text-2xl md:mt-0">
 	<Header
 		title="Зміст"
 		subtitle="Index Arcanum"
 		class="mb-8 flex w-full flex-col items-center justify-center"
 	/>
-	<label class="input mb-2 w-full">
+	<label class="input mb-5 w-full">
 		<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 			<g
 				stroke-linejoin="round"
@@ -151,9 +143,9 @@
 		</svg>
 		<input type="search" placeholder="Пошук" class="font-sans" bind:value={inputValue} />
 	</label>
-	<form class="filter mb-2">
+	<form class="filter mb-5 gap-y-2">
 		<input
-			class="btn btn-square inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+			class="btn btn-square text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 			type="reset"
 			value="×"
 			onclick={() => (selectedClass = null)}
@@ -161,7 +153,7 @@
 
 		{#each classFilters as c}
 			<input
-				class="btn capitalize inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+				class="btn text-base capitalize inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 				type="radio"
 				name="class"
 				aria-label={c}
@@ -171,9 +163,9 @@
 		{/each}
 	</form>
 
-	<form class="filter mb-5">
+	<form class="filter mb-6 gap-y-2">
 		<input
-			class="btn btn-square inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+			class="btn btn-square text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 			type="reset"
 			value="×"
 			onclick={() => (selectedLevel = null)}
@@ -181,7 +173,7 @@
 
 		{#each levelFilters as l}
 			<input
-				class="btn inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+				class="btn text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 				type="radio"
 				name="level"
 				aria-label={l.toString()}
@@ -192,9 +184,7 @@
 	</form>
 
 	{#if isLoading}
-		<div
-			class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-base-100/60"
-		>
+		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
 			<svg class="h-12 w-12 animate-spin" viewBox="0 0 24 24">
 				<circle
 					class="opacity-25"
@@ -218,9 +208,14 @@
 				<div
 					class="list-row mb-5 flex items-center gap-10 bg-base-100 px-12 transition-all hover:scale-105 hover:shadow-xl"
 				>
-					<a href={`/spells/${spell.id}`} class="flex flex-1 items-center gap-10 no-underline">
-						<div class="flex flex-row items-center justify-center">
-							<div class="w-30 text-3xl font-bold whitespace-nowrap">
+					<a
+						href={`/spells/${spell.id}`}
+						class="flex flex-1 flex-col-reverse items-center gap-10 no-underline md:flex-row"
+					>
+						<div
+							class="flex flex-col-reverse items-center justify-center gap-3 md:flex-row md:gap-0"
+						>
+							<div class="text-xl font-bold whitespace-nowrap md:w-30 md:text-3xl">
 								{romanize(i + 1 + searchResult.pageSize * (searchResult.pageNumber - 1))}
 							</div>
 
@@ -233,19 +228,27 @@
 							</div>
 						</div>
 						<div class="flex w-full flex-col">
-							<h3
-								class="mt-2 mb-3 text-3xl font-bold first-letter:float-left first-letter:mr-1 first-letter:text-5xl first-letter:leading-none first-letter:font-extrabold"
-							>
-								{spell.title_ua}
-								<span class="small-caps ml-1 text-2xl font-normal text-base-content-500"
-									>"{spell.title}"</span
+							<div class="flex items-start justify-between">
+								<h3
+									class="mt-2 mb-3 text-3xl font-bold first-letter:mr-0.5 first-letter:inline-block first-letter:align-text-bottom first-letter:text-4xl/1 first-letter:leading-none first-letter:font-extrabold"
 								>
-							</h3>
+									{spell.title_ua}
+									<div
+										class="small-caps mt-4 text-xl font-normal text-base-content-500 md:mt-0 md:ml-1 md:inline md:text-2xl"
+									>
+										"{spell.title}"
+									</div>
+								</h3>
+								<SaveButton
+									isSaved={isSaved(spell.id)}
+									onToggle={() => toggleSpell(spell.id)}
+									class="mt-2 md:hidden"
+								/>
+							</div>
 							<div class="mb-4 flex flex-col gap-3">
 								<div class="capitalize italic">
 									{#each spell.classes as casterClass, i}
-										{casterClass}
-										{i < spell.classes.length - 1 ? ', ' : ''}
+										{casterClass}{i < spell.classes.length - 1 ? ', ' : ''}
 									{/each}
 								</div>
 								<div>
@@ -259,15 +262,11 @@
 							</div>
 						</div>
 					</a>
-					<button
-						class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30 active:scale-95"
-						onclick={() => toggleSpell(spell.id)}
-					>
-						<Bookmark
-							class="text-base-content transition-all group-hover:scale-110 group-active:scale-125"
-							fill={isSaved(spell.id) ? 'current' : 'none'}
-						/>
-					</button>
+					<SaveButton
+						isSaved={isSaved(spell.id)}
+						onToggle={() => toggleSpell(spell.id)}
+						class="hidden md:block"
+					/>
 				</div>
 			{/each}
 			<Pagination
