@@ -1,10 +1,9 @@
 <script lang="ts">
-	// TODO: some weird stuff with restoring state (goind backward from the spell page)
-	// UPD: the page is being reset because other the params are not null, need to check that
 	import { page } from '$app/state';
 	import debounce from 'lodash.debounce';
 	import { onDestroy } from 'svelte';
-	import type { SpellSlim, PagedResponse } from '../api/spells/+server';
+	import type { PagedResponse } from '../api/spells/+server';
+	import type { SpellSlim } from '$lib/types';
 	import Markdown from '$lib/components/Markdown.svelte';
 	import { Bookmark } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
@@ -250,7 +249,7 @@
 									{/each}
 								</div>
 								<div>
-									<span class="font-bold">{spell.level} </span> рівень
+									<span class="font-bold">{spell.level}</span> рівень
 								</div>
 								{#if spell.materialDescription}
 									<div>
@@ -261,11 +260,11 @@
 						</div>
 					</a>
 					<button
-						class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30"
+						class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30 active:scale-95"
 						onclick={() => toggleSpell(spell.id)}
 					>
 						<Bookmark
-							class="text-base-content transition-all group-hover:scale-125 group-active:scale-150"
+							class="text-base-content transition-all group-hover:scale-110 group-active:scale-125"
 							fill={isSaved(spell.id) ? 'current' : 'none'}
 						/>
 					</button>

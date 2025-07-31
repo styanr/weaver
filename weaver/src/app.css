@@ -48,6 +48,10 @@
 	.small-caps {
 		font-family: 'Alegreya SC', 'EB Garamond', 'serif';
 	}
+
+	.prose {
+		@apply text-base-content;
+	}
 }
 
 @theme {

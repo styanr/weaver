@@ -2,12 +2,12 @@
 	import Header from '$lib/components/Header.svelte';
 	import Ribbon from '$lib/components/Ribbon.svelte';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { Bookmark, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Bookmark, ChevronDown } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import type { SpellSlim } from '../../api/spells/+server';
+	import type { SpellSlim } from '$lib/types.js';
 
 	interface SavedSpellsResult {
 		items: SpellSlim[];
@@ -218,11 +218,11 @@
 										</div>
 									</a>
 									<button
-										class="group btn btn-circle inset-shadow-base-content transition-all duration-200 btn-xl hover:inset-shadow-sm/30"
+										class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30 active:scale-95"
 										onclick={() => toggleSpell(spell.id)}
 									>
 										<Bookmark
-											class="text-base-content transition-all group-hover:scale-125 group-active:scale-150"
+											class="text-base-content transition-all group-hover:scale-110 group-active:scale-125"
 											fill={isSaved(spell.id) ? 'current' : 'none'}
 										/>
 									</button>

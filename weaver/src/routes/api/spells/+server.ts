@@ -1,24 +1,9 @@
 import { connectToDB } from '$lib/db';
 import { QueryBuilder } from '$lib/query';
-import type { Component } from '$lib/types';
+import type { SpellSlim } from '$lib/types';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 const PAGE_SIZE = 15;
-
-export interface SpellSlim {
-	id: number;
-	school: string;
-	level: number;
-	classes: string[];
-	title: string;
-	title_ua: string;
-	casting_time: string;
-	duration: string;
-	distance: string;
-	components: Set<Component>;
-	materialDescription: string | undefined;
-	materialPrice: number | undefined;
-}
 
 export interface PagedResponse<T> {
 	items: T[];

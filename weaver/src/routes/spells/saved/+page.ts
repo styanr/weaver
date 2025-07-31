@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { SpellSlim } from '../../api/spells/+server';
+import type { SpellSlim } from '$lib/types';
 import type { PageLoad } from './$types';
 
 interface SavedSpellsResult {
