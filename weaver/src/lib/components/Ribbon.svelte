@@ -34,7 +34,7 @@
 				version="1.1"
 				xmlns="http://www.w3.org/2000/svg"
 				xmlns:xlink="http://www.w3.org/1999/xlink"
-				class="transition-all group-hover:drop-shadow-xl/50"
+				class="transition-all group-hover:drop-shadow-2xl"
 			>
 				<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
 					<g id="Icon-Set-Filled" fill="currentColor">

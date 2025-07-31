@@ -6,13 +6,13 @@
 	import { onDestroy } from 'svelte';
 	import type { SpellSlim, PagedResponse } from '../api/spells/+server';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { Bookmark, Heart } from 'lucide-svelte';
+	import { Bookmark } from 'lucide-svelte';
 	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/Pagination.svelte';
-	import { browser } from '$app/environment';
 	import Ribbon from '$lib/components/Ribbon.svelte';
+	import Header from '$lib/components/Header.svelte';
 
 	const classFilters = [
 		'варвар',
@@ -29,7 +29,6 @@
 		'чарівник'
 	];
 
-	// TODO: 0 broken
 	const levelFilters = Array.from({ length: 10 }, (_, i) => i);
 
 	const query = $derived(page.url.searchParams.get('query'));
@@ -122,16 +121,22 @@
 	};
 </script>
 
-<div class="list relative w-[70rem] font-garamond text-2xl">
-	<a
-		href="/spells/saved"
-		class="group absolute -top-6 right-5 flex flex-row items-center justify-start gap-x-6"
-	>
-		<div class="text-xl font-bold uppercase italic opacity-60">GRIMOIRE</div>
-		<Ribbon class="" />
-	</a>
-	<div class="m-auto mb-2 text-6xl font-bold uppercase">Зміст</div>
-	<div class="m-auto mb-10 text-xl font-bold uppercase italic opacity-80">Index Arcanum</div>
+<a
+	href="/spells/saved"
+	class="group absolute -top-0 right-5 z-50 flex flex-row items-center justify-start gap-x-6"
+>
+	<div class="small-caps text-2xl italic opacity-0 transition-all group-hover:opacity-60">
+		Гримуар
+	</div>
+	<Ribbon class="" />
+</a>
+
+<div class="list relative w-full text-2xl">
+	<Header
+		title="Зміст"
+		subtitle="Index Arcanum"
+		class="mb-8 flex w-full flex-col items-center justify-center"
+	/>
 	<label class="input mb-2 w-full">
 		<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 			<g
@@ -148,11 +153,16 @@
 		<input type="search" placeholder="Пошук" class="font-sans" bind:value={inputValue} />
 	</label>
 	<form class="filter mb-2">
-		<input class="btn btn-square" type="reset" value="×" onclick={() => (selectedClass = null)} />
+		<input
+			class="btn btn-square inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+			type="reset"
+			value="×"
+			onclick={() => (selectedClass = null)}
+		/>
 
 		{#each classFilters as c}
 			<input
-				class="btn capitalize"
+				class="btn capitalize inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 				type="radio"
 				name="class"
 				aria-label={c}
@@ -163,11 +173,16 @@
 	</form>
 
 	<form class="filter mb-5">
-		<input class="btn btn-square" type="reset" value="×" onclick={() => (selectedLevel = null)} />
+		<input
+			class="btn btn-square inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+			type="reset"
+			value="×"
+			onclick={() => (selectedLevel = null)}
+		/>
 
 		{#each levelFilters as l}
 			<input
-				class="btn"
+				class="btn inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
 				type="radio"
 				name="level"
 				aria-label={l.toString()}
@@ -177,7 +192,6 @@
 		{/each}
 	</form>
 
-	<!-- Loading indicator -->
 	{#if isLoading}
 		<div
 			class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-base-100/60"
@@ -224,7 +238,9 @@
 								class="mt-2 mb-3 text-3xl font-bold first-letter:float-left first-letter:mr-1 first-letter:text-5xl first-letter:leading-none first-letter:font-extrabold"
 							>
 								{spell.title_ua}
-								<span class="small-caps ml-1 text-2xl text-base-content-500">"{spell.title}"</span>
+								<span class="small-caps ml-1 text-2xl font-normal text-base-content-500"
+									>"{spell.title}"</span
+								>
 							</h3>
 							<div class="mb-4 flex flex-col gap-3">
 								<div class="capitalize italic">
@@ -245,11 +261,11 @@
 						</div>
 					</a>
 					<button
-						class="group btn btn-circle btn-xl hover:inset-shadow-sm"
+						class="group btn btn-circle inset-shadow-base-content btn-xl hover:inset-shadow-sm/30"
 						onclick={() => toggleSpell(spell.id)}
 					>
 						<Bookmark
-							class="transition-all group-hover:scale-125 group-active:scale-150"
+							class="text-base-content transition-all group-hover:scale-125 group-active:scale-150"
 							fill={isSaved(spell.id) ? 'current' : 'none'}
 						/>
 					</button>

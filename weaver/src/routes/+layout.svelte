@@ -4,6 +4,6 @@
 	let { children } = $props();
 </script>
 
-<div class="relative flex flex-col items-center p-5">
+<div class="relative m-auto flex w-[70rem] flex-col items-center p-5 font-garamond">
 	{@render children()}
 </div>
