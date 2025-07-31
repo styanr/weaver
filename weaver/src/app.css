@@ -67,4 +67,7 @@
 		background-blend-mode: hard-light;
 		color: var(--color-base-content);
 	}
+	br {
+		@apply my-2 block;
+	}
 }

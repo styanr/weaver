@@ -46,7 +46,7 @@
 	onToggle={() => toggleSpell(spell.id)}
 	class="fixed right-5 bottom-0 mb-6 border-base-content/20 p-7 shadow-xl/30 shadow-base-content md:hidden"
 />
-<div class="mx-auto mt-10 py-6 pb-15 md:mt-0 md:pb-0">
+<div class="mx-auto mt-10 py-6 pb-15 md:pb-0">
 	<div class="flex w-full justify-center">
 		<div class="relative mb-8 flex w-fit flex-col justify-center gap-10 md:flex-row">
 			<Header
@@ -62,6 +62,9 @@
 		</div>
 	</div>
 	<div class="mb-6 text-center capitalize italic opacity-75">
+		<span class="font-bold">
+			{spell.level === 0 ? 'Замовляння' : `${spell.level} рівень`} ·
+		</span>
 		{#each spell.classes as casterClass, i}
 			{casterClass}{i < spell.classes.length - 1 ? ', ' : ''}
 		{/each}
@@ -69,16 +72,14 @@
 
 	<div class="mb-8 flex items-center justify-center">
 		<div class="h-px flex-1 bg-base-content/20"></div>
-		<div class="mx-4 text-base-content/40">⁂</div>
+		<div class="mx-4 text-base-content/40 select-none">⁂</div>
 		<div class="h-px flex-1 bg-base-content/20"></div>
 	</div>
 
 	<table class="m-auto mb-8 w-[80%] border-collapse">
 		<tbody>
 			<tr class="border-b border-base-content/10">
-				<th class="small-caps py-3 pr-8 text-left font-medium tracking-wide italic opacity-75"
-					>Школа</th
-				>
+				<th class="small-caps py-3 pr-8 text-left font-medium tracking-wide opacity-75">Школа</th>
 				<td class="py-3 text-left">{spell.school}</td>
 			</tr>
 			<tr class="border-b border-base-content/10">
@@ -118,6 +119,6 @@
 	{/if}
 
 	<div class="leading-relaxed">
-		<Markdown text={spell.description} class="prose max-w-none text-justify text-2xl" />
+		<Markdown text={spell.description} class="prose max-w-none text-justify !text-2xl" />
 	</div>
 </div>

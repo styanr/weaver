@@ -1,10 +1,8 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
-	import Markdown from '$lib/components/Markdown.svelte';
-	import SaveButton from '$lib/components/SaveButton.svelte';
+	import SpellItem from '$lib/components/SpellItem.svelte';
 	import { ChevronDown } from 'lucide-svelte';
-	import { romanize } from '$lib/numbers';
 	import { LocalStorage } from '$lib/storage.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -161,72 +159,14 @@
 					{#if !isCollapsed}
 						<div class="mt-4 space-y-5" transition:slide={{ duration: 300, easing: quintOut }}>
 							{#each spells as spell, spellIndex}
-								<div
-									class="list-row mb-5 flex items-center gap-10 bg-base-100 px-12 transition-all hover:scale-105 hover:shadow-xl"
+								<SpellItem
+									{spell}
+									index={getSpellIndexInLevel(spell, level)}
+									isSaved={isSaved(spell.id)}
+									onToggle={() => toggleSpell(spell.id)}
+									class="animate-fade-in"
 									style="animation-delay: {spellIndex * 50}ms"
-									class:animate-fade-in={!isCollapsed}
-								>
-									<a
-										href={`/spells/${spell.id}`}
-										class="flex flex-1 flex-col-reverse items-center gap-10 no-underline md:flex-row"
-									>
-										<div
-											class="flex flex-col-reverse items-center justify-center gap-3 md:flex-row md:gap-0"
-										>
-											<div class="text-xl font-bold whitespace-nowrap md:w-30 md:text-3xl">
-												{romanize(getSpellIndexInLevel(spell, level))}
-											</div>
-
-											<div class="flex h-8 w-8 items-center justify-center">
-												<svg viewBox="0 0 24 24" class="h-6 w-6 fill-current">
-													<path
-														d="M12 2C10 2 8 4 8 6C8 8 10 10 12 10C14 10 16 8 16 6C16 4 14 2 12 2M6 8C4 8 2 10 2 12C2 14 4 16 6 16C8 16 10 14 10 12C10 10 8 8 6 8M18 8C16 8 14 10 14 12C14 14 16 16 18 16C20 16 22 14 22 12C22 10 20 8 18 8M12 14C10 14 8 16 8 18C8 20 10 22 12 22C14 22 16 20 16 18C16 16 14 14 12 14"
-													/>
-												</svg>
-											</div>
-										</div>
-										<div class="flex w-full flex-col">
-											<div class="flex items-start justify-between">
-												<h3
-													class="mt-2 mb-3 text-3xl font-bold first-letter:mr-0.5 first-letter:inline-block first-letter:align-text-bottom first-letter:text-4xl/1 first-letter:leading-none first-letter:font-extrabold"
-												>
-													{spell.title_ua}
-													<div
-														class="small-caps mt-4 text-xl font-normal text-base-content-500 md:mt-0 md:ml-1 md:inline md:text-2xl"
-													>
-														"{spell.title}"
-													</div>
-												</h3>
-												<SaveButton
-													isSaved={isSaved(spell.id)}
-													onToggle={() => toggleSpell(spell.id)}
-													class="mt-2 md:hidden"
-												/>
-											</div>
-											<div class="mb-4 flex flex-col gap-3">
-												<div class="capitalize italic">
-													{#each spell.classes as casterClass, i}
-														{casterClass}
-														{i < spell.classes.length - 1 ? ', ' : ''}
-													{/each}
-												</div>
-												<div>
-													<span class="font-bold">{spell.level} </span> рівень
-												</div>
-												{#if spell.materialDescription}
-													<div>
-														Матеріали: <Markdown text={spell.materialDescription} class="inline" />
-													</div>
-												{/if}
-											</div>
-										</div>
-									</a>
-									<SaveButton
-										isSaved={isSaved(spell.id)}
-										onToggle={() => toggleSpell(spell.id)}
-										class="hidden md:block"
-									/>
-								</div>
+								/>
 							{/each}
 						</div>
 					{/if}
