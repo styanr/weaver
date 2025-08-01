@@ -4,6 +4,9 @@
 	let { children } = $props();
 </script>
 
+<svelte:head>
+	<title>Weaver</title>
+</svelte:head>
 <div
 	class="relative m-auto flex max-w-4xl flex-col items-center p-5 font-garamond text-xl md:text-2xl"
 >

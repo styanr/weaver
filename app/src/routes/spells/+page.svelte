@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import debounce from 'lodash.debounce';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { PagedResponse } from '../api/spells/+server';
 	import type { SpellSlim } from '$lib/types';
 	import { LocalStorage } from '$lib/storage.svelte';

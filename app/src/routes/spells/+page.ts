@@ -10,6 +10,8 @@ interface SearchResult {
 }
 
 export const load: PageLoad = async ({ fetch, url }) => {
+	// TODO: fix server loading
+	if (!browser) return;
 	const searchSpells = (url: string): Promise<SearchResult> => {
 		return new Promise((resolve, reject) => {
 			fetch(url)
