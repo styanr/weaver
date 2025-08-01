@@ -105,11 +105,15 @@
 	};
 </script>
 
+<svelte:head>
+	<title>Ґримуар · Weaver</title>
+</svelte:head>
+
 <RibbonLink href="/spells" title="Зміст" position="right" class="absolute -top-0 right-5" />
 
 <div class="list relative mt-10 w-full py-6 text-2xl md:mt-0">
 	<Header
-		title="Гримуар"
+		title="Ґримуар"
 		subtitle="Grimoire Arcanis"
 		class="mb-8 flex w-full flex-col items-center justify-center"
 	/>
@@ -179,7 +183,7 @@
 						d="M17 3H7C5.9 3 5 3.9 5 5V19L12 16L19 19V5C19 3.9 18.1 3 17 3M17 15L12 13L7 15V5H17V15Z"
 					/>
 				</svg>
-				<h3 class="mb-2 text-2xl font-bold">У Гримуарі порожньо...</h3>
+				<h3 class="mb-2 text-2xl font-bold">У Ґримуарі порожньо...</h3>
 				<p class="text-center text-base-content-500">Потрібно вивчити більше заклинань</p>
 				<a href="/spells" class="btn mt-4 inset-shadow-base-content hover:inset-shadow-sm/30">
 					Переглянути каталог

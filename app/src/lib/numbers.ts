@@ -40,3 +40,12 @@ export function romanize(num: number) {
 	while (i--) roman = (key[+digits.pop() + i * 10] || '') + roman;
 	return Array(+digits.join('') + 1).join('M') + roman;
 }
+
+export const parsePositiveIntegerParam = (s: string | null): number | null => {
+	if (!s) return null;
+	const t = s.trim();
+	if (!/^[1-9]\d*$/.test(t)) return null;
+
+	const n = Number(t);
+	return Number.isSafeInteger(n) ? n : null;
+};

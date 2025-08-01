@@ -1,6 +1,7 @@
 import { connectToDB } from '$lib/db';
 import { QueryBuilder } from '$lib/query';
 import type { SpellSlim } from '$lib/types';
+import { parsePositiveIntegerParam } from '$lib/numbers';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 const PAGE_SIZE = 15;
@@ -17,8 +18,8 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const searchQueryParam = url.searchParams.get('query') ?? '';
 	const classParam = url.searchParams.get('class');
-	const levelParam = url.searchParams.get('level');
-	const page = url.searchParams.get('page') ? Number(url.searchParams.get('page')) : 1;
+	const levelParam = parsePositiveIntegerParam(url.searchParams.get('level'));
+	const page = parsePositiveIntegerParam(url.searchParams.get('page')) ?? 1;
 
 	try {
 		const filterParts: string[] = [];
@@ -32,9 +33,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			filterParts.push('c.name_ua = $');
 			filterValues.push(classParam);
 		}
-		if (levelParam) {
+		if (levelParam !== null) {
 			filterParts.push('spells.level = $');
-			filterValues.push(Number(levelParam));
+			filterValues.push(levelParam);
 		}
 
 		const filterClause =

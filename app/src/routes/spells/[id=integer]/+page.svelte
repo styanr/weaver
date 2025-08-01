@@ -37,9 +37,13 @@
 	};
 </script>
 
+<svelte:head>
+	<title>{spell.title_ua} · Weaver</title>
+</svelte:head>
+
 <RibbonLink href="/spells" title="Зміст" position="left" class="absolute -top-0 left-5" />
 
-<RibbonLink href="/spells/saved" title="Гримуар" position="right" class="absolute -top-0 right-5" />
+<RibbonLink href="/spells/saved" title="Ґримуар" position="right" class="absolute -top-0 right-5" />
 
 <SaveButton
 	{isSaved}

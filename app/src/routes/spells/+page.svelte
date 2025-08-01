@@ -11,6 +11,7 @@
 	import SpellItem from '$lib/components/SpellItem.svelte';
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import Skull from '$lib/components/svg/Skull.svelte';
+	import { parsePositiveIntegerParam } from '$lib/numbers';
 
 	const classFilters = [
 		'бард',
@@ -33,8 +34,8 @@
 	let inputValue = $state<string | null>(query);
 	let debouncedQuery = $state(query ?? '');
 	let selectedClass = $state<string | null>(paramClass);
-	let selectedLevel = $state<number | null>(paramLevel ? Number(paramLevel) : null);
-	let selectedPage = $state<number | null>(paramPage ? Number(paramPage) : null);
+	let selectedLevel = $state<number | null>(parsePositiveIntegerParam(paramLevel));
+	let selectedPage = $state<number | null>(parsePositiveIntegerParam(paramPage));
 
 	let isLoading = $state(false);
 	let lastError = $state<string | null>(null);
@@ -115,7 +116,11 @@
 	};
 </script>
 
-<RibbonLink href="/spells/saved" title="Гримуар" position="right" class="absolute -top-0 right-5" />
+<svelte:head>
+	<title>Зміст · Weaver</title>
+</svelte:head>
+
+<RibbonLink href="/spells/saved" title="Ґримуар" position="right" class="absolute -top-0 right-5" />
 
 <div class="list relative mt-10 w-full py-6 text-2xl md:mt-0">
 	<Header
@@ -223,5 +228,11 @@
 				<p class="text-center text-base-content-500">Можливо, варто створити власні чари?</p>
 			</div>
 		{/if}
+	{:else}
+		<div class="flex flex-col items-center justify-center py-16">
+			<Skull class="mb-5 aspect-square h-23 text-base-content/70" />
+			<h3 class="mb-2 text-2xl font-bold">Згадок немає...</h3>
+			<p class="text-center text-base-content-500">Можливо, варто створити власні чари?</p>
+		</div>
 	{/if}
 </div>
