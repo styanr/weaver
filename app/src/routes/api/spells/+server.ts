@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		if (searchQueryParam !== '') {
 			filterParts.push('title_ua ILIKE $ OR title ILIKE $');
-			filterValues.push(`${searchQueryParam}%`, `${searchQueryParam}%`);
+			filterValues.push(`%${searchQueryParam}%`, `%${searchQueryParam}%`);
 		}
 		if (classParam) {
 			filterParts.push('c.name_ua = $');
