@@ -10,17 +10,14 @@
 	import Header from '$lib/components/Header.svelte';
 	import SpellItem from '$lib/components/SpellItem.svelte';
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
+	import Skull from '$lib/components/svg/Skull.svelte';
 
 	const classFilters = [
-		'варвар',
 		'бард',
 		'клірик',
 		'друїд',
-		'боєць',
-		'монах',
 		'паладин',
 		'рейнджер',
-		'пройдисвіт',
 		'заклинач',
 		'чаклун',
 		'чарівник'
@@ -219,6 +216,12 @@
 					selectedPage = newPage;
 				}}
 			/>
+		{:else}
+			<div class="flex flex-col items-center justify-center py-16">
+				<Skull class="mb-5 aspect-square h-23 text-base-content/70" />
+				<h3 class="mb-2 text-2xl font-bold">Згадок немає...</h3>
+				<p class="text-center text-base-content-500">Можливо, варто створити власні чари?</p>
+			</div>
 		{/if}
 	{/if}
 </div>

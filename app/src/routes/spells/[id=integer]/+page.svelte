@@ -61,13 +61,15 @@
 			/>
 		</div>
 	</div>
-	<div class="mb-6 text-center capitalize italic opacity-75">
+	<div class="mb-6 text-center text-base-content/75 italic">
 		<span class="font-bold">
 			{spell.level === 0 ? 'Замовляння' : `${spell.level} рівень`} ·
 		</span>
-		{#each spell.classes as casterClass, i}
-			{casterClass}{i < spell.classes.length - 1 ? ', ' : ''}
-		{/each}
+		<span class="capitalize">
+			{#each spell.classes as casterClass, i}
+				{casterClass}{i < spell.classes.length - 1 ? ', ' : ''}
+			{/each}
+		</span>
 	</div>
 
 	<div class="mb-8 flex items-center justify-center">

@@ -1,13 +1,13 @@
-import postgres from 'https://deno.land/x/postgresjs/mod.js';
-import { Class, Spell } from '../weaver/src/lib/types.ts';
+import postgres from "https://deno.land/x/postgresjs/mod.js";
+import { Class, Spell } from "../weaver/src/lib/types.ts";
 
 export async function createSchema() {
-  const sql = postgres(Deno.env.get('POSTGRES_URL')!);
+  const sql = postgres(Deno.env.get("POSTGRES_URL")!);
   try {
     const [{ version }] = await sql`SELECT version()`;
-    console.log('✅ Connected to:', version);
+    console.log("✅ Connected to:", version);
   } catch (e) {
-    console.error('❌ Failed to fetch server version:', e);
+    console.error("❌ Failed to fetch server version:", e);
     return;
   }
 
@@ -27,7 +27,7 @@ export async function createSchema() {
           GRANT ALL ON SCHEMA public TO public
         `;
       } catch (e) {
-        console.error('❌ schema create error:', e.code, e.message);
+        console.error("❌ schema create error:", e.code, e.message);
       }
       try {
         await tx`
@@ -38,9 +38,9 @@ export async function createSchema() {
             'verbal','somatic','material'
           )
         `;
-        console.log('✅ enum component_type created or already exists');
+        console.log("✅ enum component_type created or already exists");
       } catch (e) {
-        console.error('❌ enum component_type error:', e.code, e.message);
+        console.error("❌ enum component_type error:", e.code, e.message);
       }
 
       try {
@@ -51,9 +51,9 @@ export async function createSchema() {
             name_ua  TEXT   NOT NULL
           )
         `;
-        console.log('✅ table classes created or already exists');
+        console.log("✅ table classes created or already exists");
       } catch (e) {
-        console.error('❌ table classes error:', e.code, e.message);
+        console.error("❌ table classes error:", e.code, e.message);
       }
 
       try {
@@ -73,9 +73,10 @@ export async function createSchema() {
             material_price       INTEGER 
           )
         `;
-        console.log('✅ table spells created or already exists');
+
+        console.log("✅ table spells created or already exists");
       } catch (e) {
-        console.error('❌ table spells error:', e.code, e.message);
+        console.error("❌ table spells error:", e.code, e.message);
       }
 
       try {
@@ -86,22 +87,22 @@ export async function createSchema() {
             PRIMARY KEY (spell_id, class_id)
           )
         `;
-        console.log('✅ table spells_classes created or already exists');
+        console.log("✅ table spells_classes created or already exists");
       } catch (e) {
-        console.error('❌ table spells_classes error:', e.code, e.message);
+        console.error("❌ table spells_classes error:", e.code, e.message);
       }
     });
 
-    console.log('✅ Schema creation transaction completed');
+    console.log("✅ Schema creation transaction completed");
   } catch (e) {
-    console.error('❌ Transaction failed, rolled back:', e);
+    console.error("❌ Transaction failed, rolled back:", e);
   } finally {
     await sql.end();
   }
 }
 
 export async function loadData(classesList: Class[], spellsList: Spell[]) {
-  const sql = postgres(Deno.env.get('POSTGRES_URL')!);
+  const sql = postgres(Deno.env.get("POSTGRES_URL")!);
   try {
     await sql.begin(async (tx) => {
       await tx`TRUNCATE spells_classes, spells, classes CASCADE`;
@@ -114,7 +115,7 @@ export async function loadData(classesList: Class[], spellsList: Spell[]) {
       }
 
       for (const sp of spellsList) {
-        const compLiteral = `{${[...sp.components].join(',')}}`;
+        const compLiteral = `{${[...sp.components].join(",")}}`;
 
         await tx`
           INSERT INTO spells (
@@ -149,9 +150,9 @@ export async function loadData(classesList: Class[], spellsList: Spell[]) {
       }
     });
 
-    console.log('✅ loadData completed');
+    console.log("✅ loadData completed");
   } catch (err) {
-    console.error('❌ loadData failed:', err);
+    console.error("❌ loadData failed:", err);
     throw err;
   } finally {
     await sql.end();

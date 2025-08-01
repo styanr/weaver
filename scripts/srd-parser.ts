@@ -1,25 +1,25 @@
 #!/usr/bin/env -S deno --allow-all --env-file
 
-import { spawnSync } from 'node:child_process';
-import { parse as parsePath, join } from 'node:path';
-import * as fs from 'node:fs/promises';
-import { existsSync } from 'node:fs';
-import { parse } from '@eemeli/yaml';
-import { Spell, Class, Component } from '../weaver/src/lib/types.ts';
-import process from 'node:process';
-import { createSchema, loadData } from './db.ts';
+import { spawnSync } from "node:child_process";
+import { parse as parsePath, join } from "node:path";
+import * as fs from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { parse } from "@eemeli/yaml";
+import { Spell, Class, Component } from "../weaver/src/lib/types.ts";
+import process from "node:process";
+import { createSchema, loadData } from "./db.ts";
 
-const REPO_URL = 'https://github.com/Tuomari-ua/tuomari-ua.github.io';
-const SPELLS_DIR_PATH = 'srd/_spells';
-const CLASSES_DIR_PATH = 'srd/_docs/character/classes';
-const TEMP_DEST = 'temp';
-const OUTPUT_DIR = 'output';
+const REPO_URL = "https://github.com/Tuomari-ua/tuomari-ua.github.io";
+const SPELLS_DIR_PATH = "srd/_spells";
+const CLASSES_DIR_PATH = "srd/_docs/character/classes";
+const TEMP_DEST = "temp";
+const OUTPUT_DIR = "output";
 
 const SPELL_PREFIXES = {
-  castingTime: ['**Час створення:**', '**Час створення**'],
-  duration: ['**Тривалість:**', '**Тривалість**'],
-  distance: ['**Відстань:**', '**Відстань**'],
-  components: ['**Складові:**', '**Складові**'],
+  castingTime: ["**Час створення:**", "**Час створення**"],
+  duration: ["**Тривалість:**", "**Тривалість**"],
+  distance: ["**Відстань:**", "**Відстань**"],
+  components: ["**Складові:**", "**Складові**"],
 } as const;
 
 const CURRENCY_MULTIPLIERS: Record<string, number> = {
@@ -30,56 +30,56 @@ const CURRENCY_MULTIPLIERS: Record<string, number> = {
 } as const;
 
 const COMPONENT_SYMBOLS: Record<string, Component> = {
-  В: 'verbal',
-  С: 'somatic',
-  М: 'material',
+  В: "verbal",
+  С: "somatic",
+  М: "material",
 } as const;
 
 function runCommand(command: string, args: string[]): void {
-  const result = spawnSync(command, args, { stdio: 'inherit' });
+  const result = spawnSync(command, args, { stdio: "inherit" });
   if (result.error || result.status !== 0) {
-    console.error(`Error: "${command} ${args.join(' ')}" failed.`);
+    console.error(`Error: "${command} ${args.join(" ")}" failed.`);
     process.exit(result.status || 1);
   }
 }
 
 function cloneSpellsRepository(): void {
   if (existsSync(join(TEMP_DEST, SPELLS_DIR_PATH))) {
-    console.log('SRD repository already exists, skipping clone...');
+    console.log("SRD repository already exists, skipping clone...");
     return;
   }
 
-  console.log('Cloning SRD repository...');
+  console.log("Cloning SRD repository...");
 
-  runCommand('git', [
-    'clone',
-    '--depth=1',
-    '--filter=blob:none',
-    '--sparse',
+  runCommand("git", [
+    "clone",
+    "--depth=1",
+    "--filter=blob:none",
+    "--sparse",
     REPO_URL,
     TEMP_DEST,
   ]);
 
   process.chdir(TEMP_DEST);
-  runCommand('git', [
-    'sparse-checkout',
-    'set',
+  runCommand("git", [
+    "sparse-checkout",
+    "set",
     SPELLS_DIR_PATH,
     CLASSES_DIR_PATH,
   ]);
-  process.chdir('..');
+  process.chdir("..");
 
   console.log(
     `Done: sparse-cloned ${SPELLS_DIR_PATH} into ${join(
       TEMP_DEST,
-      SPELLS_DIR_PATH
-    )}`
+      SPELLS_DIR_PATH,
+    )}`,
   );
 }
 
 const extractLine = (
   lines: string[],
-  prefixes: readonly string[]
+  prefixes: readonly string[],
 ): { index: number; value?: string } => {
   let prefix: string | undefined;
 
@@ -96,7 +96,9 @@ const extractLine = (
     return { index: -1 };
   }
 
-  const value = lines[index]?.replace(prefix, '').trim();
+  const value = prefix
+    ? lines[index]?.replace(prefix, "").trim()
+    : lines[index].trim();
   return { index, value };
 };
 
@@ -113,18 +115,18 @@ const parseSpellYaml = (contents: string): SpellConfig => {
   const yamlMatch = contents.match(yamlRegex);
 
   if (!yamlMatch) {
-    throw new Error('No YAML front matter found in spell file');
+    throw new Error("No YAML front matter found in spell file");
   }
 
   const yamlContent = yamlMatch[1];
   const parsed = parse(yamlContent);
 
   return {
-    title: parsed.title.split('[')[1]?.replace(']', '').trim() || '',
-    title_ua: parsed.title.split('[')[0].trim() || '',
+    title: parsed.title.split("[")[1]?.replace("]", "").trim() || "",
+    title_ua: parsed.title.split("[")[0].trim() || "",
     level: parseInt(parsed.level, 10),
     school: parsed.tag.trim(),
-    classes: parsed.classes.split(',').map((c: string) => c.trim()),
+    classes: parsed.classes.split(",").map((c: string) => c.trim()),
   };
 };
 
@@ -149,34 +151,34 @@ let classCounter = 0;
 
 function latinize(input: string): string {
   const lookup = {
-    А: 'A',
-    В: 'B',
-    Е: 'E',
-    К: 'K',
-    М: 'M',
-    Н: 'H',
-    О: 'O',
-    Р: 'P',
-    С: 'C',
-    Т: 'T',
-    У: 'y',
-    Х: 'X',
-    а: 'a',
-    в: 'B',
-    е: 'e',
-    к: 'K',
-    м: 'M',
-    н: 'H',
-    о: 'o',
-    р: 'p',
-    с: 'c',
-    т: 'T',
-    у: 'y',
-    х: 'x',
+    А: "A",
+    В: "B",
+    Е: "E",
+    К: "K",
+    М: "M",
+    Н: "H",
+    О: "O",
+    Р: "P",
+    С: "C",
+    Т: "T",
+    У: "y",
+    Х: "X",
+    а: "a",
+    в: "B",
+    е: "e",
+    к: "K",
+    м: "M",
+    н: "H",
+    о: "o",
+    р: "p",
+    с: "c",
+    т: "T",
+    у: "y",
+    х: "x",
   };
-  return Array.from(input.normalize('NFKD'))
+  return Array.from(input.normalize("NFKD"))
     .map((E) => lookup[E] ?? E)
-    .join('');
+    .join("");
 }
 
 const getClassIds = (classNames: string[]): number[] => {
@@ -190,7 +192,7 @@ const getClassIds = (classNames: string[]): number[] => {
       classes.push({
         id: ++classCounter,
         name,
-        name_ua: '',
+        name_ua: "",
       });
       spellClassIds.push(classCounter);
     } else {
@@ -211,9 +213,9 @@ interface ComponentParseResult {
 }
 
 const parseComponents = (componentsLine: string): ComponentParseResult => {
-  const componentPrefix = componentsLine.split('(')[0].trim();
+  const componentPrefix = componentsLine.split("(")[0].trim();
 
-  const components: Component[] = componentPrefix.split(',').map((c) => {
+  const components: Component[] = componentPrefix.split(",").map((c) => {
     const symbol = c.trim();
     const component = COMPONENT_SYMBOLS[symbol];
 
@@ -265,12 +267,12 @@ const parseComponents = (componentsLine: string): ComponentParseResult => {
 };
 
 async function extractSpellFromFile(filePath: string): Promise<Spell> {
-  const contents = await fs.readFile(filePath, { encoding: 'utf8' });
+  const contents = await fs.readFile(filePath, { encoding: "utf8" });
   const spellConfig = parseSpellYaml(contents);
 
   const spellClassIds = getClassIds(spellConfig.classes);
 
-  const lines = contents.split('\n');
+  const lines = contents.split("\n");
 
   const castingTimeResult = extractLine(lines, SPELL_PREFIXES.castingTime);
   const durationResult = extractLine(lines, SPELL_PREFIXES.duration);
@@ -278,22 +280,27 @@ async function extractSpellFromFile(filePath: string): Promise<Spell> {
   const componentsResult = extractLine(lines, SPELL_PREFIXES.components);
 
   const { components, materialDescription, materialPrice } = parseComponents(
-    componentsResult.value || ''
+    componentsResult.value || "",
   );
 
   const lastPropertyIndex = Math.max(
     castingTimeResult.index,
     durationResult.index,
     distanceResult.index,
-    componentsResult.index
+    componentsResult.index,
   );
 
   const description = lines
     .slice(lastPropertyIndex + 1)
     .map((line: string) => line.trim())
-    .join('\n')
+    .join("\n")
     .trim()
-    .replace(/\n{2,}/g, '\n');
+    .replace(/\n{2,}/g, "\n");
+
+  if (spellConfig.title === "Prestidigitation") {
+    console.log(contents);
+    console.log(description);
+  }
 
   const spell: Spell = {
     id: ++spellCounter,
@@ -303,9 +310,9 @@ async function extractSpellFromFile(filePath: string): Promise<Spell> {
     title: spellConfig.title,
     title_ua: spellConfig.title_ua,
     description: description,
-    casting_time: castingTimeResult.value || '',
-    duration: durationResult.value || '',
-    distance: distanceResult.value || '',
+    casting_time: castingTimeResult.value || "",
+    duration: durationResult.value || "",
+    distance: distanceResult.value || "",
     components: components,
     materialDescription: materialDescription,
     materialPrice: materialPrice,
@@ -315,9 +322,9 @@ async function extractSpellFromFile(filePath: string): Promise<Spell> {
 }
 
 async function extractClassNameFromFile(
-  filePath: string
+  filePath: string,
 ): Promise<{ name: string; name_ua: string }> {
-  const contents = await fs.readFile(filePath, { encoding: 'utf8' });
+  const contents = await fs.readFile(filePath, { encoding: "utf8" });
   const name_ua = parseClassYaml(contents).toLowerCase();
   const name = parsePath(filePath).name.toLowerCase();
 
@@ -337,7 +344,7 @@ async function removeTempDirectory(): Promise<void> {
 
   try {
     await fs.rm(TEMP_DEST, { recursive: true, force: true });
-    console.log('Removed temp directory');
+    console.log("Removed temp directory");
   } catch (error) {
     console.error(`Error removing temp directory: ${error}`);
   }
@@ -347,7 +354,7 @@ async function writeJsonFile(filename: string, data: unknown): Promise<void> {
   const jsonString = JSON.stringify(
     data,
     (_key, value) => (value instanceof Set ? [...value] : value),
-    2
+    2,
   );
 
   await fs.writeFile(join(OUTPUT_DIR, filename), jsonString);
@@ -357,10 +364,10 @@ async function main(): Promise<void> {
   try {
     cloneSpellsRepository();
 
-    console.log('Parsing spell files...');
+    console.log("Parsing spell files...");
 
     for (const file of await fs.readdir(join(TEMP_DEST, CLASSES_DIR_PATH))) {
-      if (!file.endsWith('.md')) {
+      if (!file.endsWith(".md")) {
         continue;
       }
 
@@ -375,7 +382,7 @@ async function main(): Promise<void> {
       seenClasses.add(classNames.name);
     }
     for (const file of await fs.readdir(join(TEMP_DEST, SPELLS_DIR_PATH))) {
-      if (!file.endsWith('.md')) {
+      if (!file.endsWith(".md")) {
         continue;
       }
 
@@ -389,10 +396,10 @@ async function main(): Promise<void> {
 
     // await removeTempDirectory();
     console.log(
-      `Successfully parsed ${spells.length} spells and ${classes.length} classes`
+      `Successfully parsed ${spells.length} spells and ${classes.length} classes`,
     );
   } catch (err) {
-    console.error('Error parsing spell files:', err);
+    console.error("Error parsing spell files:", err);
     process.exit(1);
   }
 }
