@@ -1,27 +1,13 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import Markdown from '$lib/components/Markdown.svelte';
-	import { LocalStorage } from '$lib/storage.svelte';
 	import type { PageProps } from './$types';
 	import type { Component } from '$lib/types';
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import SaveButton from '$lib/components/SaveButton.svelte';
+	import { isSaved, toggleSpell } from '$lib/spellStorage.svelte';
 	let { data }: PageProps = $props();
 	let spell = data.spell;
-
-	const savedSpellsStorage = new LocalStorage<number[]>('savedSpells', []);
-
-	const isSaved = $derived(savedSpellsStorage.current.includes(spell.id));
-
-	const toggleSpell = (id: number) => {
-		if (!savedSpellsStorage.current.includes(id)) {
-			savedSpellsStorage.current.push(id);
-		} else {
-			savedSpellsStorage.current = savedSpellsStorage.current.filter(
-				(saved: number) => saved !== id
-			);
-		}
-	};
 
 	const componentsToUkrainian = (components: Set<Component>) => {
 		const lookup = {
@@ -46,8 +32,8 @@
 <RibbonLink href="/spells/saved" title="Ґримуар" position="right" class="absolute -top-0 right-5" />
 
 <SaveButton
-	{isSaved}
-	onToggle={() => toggleSpell(spell.id)}
+	isSaved={isSaved(spell.slug)}
+	onToggle={() => toggleSpell(spell.slug)}
 	class="fixed right-5 bottom-0 mb-6 border-base-content/20 p-7 shadow-xl/30 shadow-base-content md:hidden"
 />
 <div class="mx-auto mt-10 py-6 pb-15 md:pb-0">
@@ -59,8 +45,8 @@
 				class="flex w-fit flex-col items-center justify-center"
 			/>
 			<SaveButton
-				{isSaved}
-				onToggle={() => toggleSpell(spell.id)}
+				isSaved={isSaved(spell.slug)}
+				onToggle={() => toggleSpell(spell.slug)}
 				class="absolute -top-0 -right-20 hidden md:block"
 			/>
 		</div>

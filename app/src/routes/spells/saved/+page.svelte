@@ -3,10 +3,10 @@
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import SpellItem from '$lib/components/SpellItem.svelte';
 	import { ChevronDown } from 'lucide-svelte';
-	import { LocalStorage } from '$lib/storage.svelte';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import type { SpellSlim } from '$lib/types.js';
+	import { clearUpStorage, isSaved, toggleSpell } from '$lib/spellStorage.svelte.js';
 
 	interface SavedSpellsResult {
 		items: SpellSlim[];
@@ -49,6 +49,7 @@
 
 			const handleResult = (result: SavedSpellsResult) => {
 				savedSpellsResult = result;
+				clearUpStorage(result.items.map((i) => i.slug));
 				isLoading = false;
 			};
 
@@ -64,20 +65,6 @@
 			}
 		}
 	});
-
-	const savedSpellsStorage = new LocalStorage<number[]>('savedSpells', []);
-
-	const isSaved = (id: number) => savedSpellsStorage.current.includes(id);
-
-	const toggleSpell = (id: number) => {
-		if (!savedSpellsStorage.current.includes(id)) {
-			savedSpellsStorage.current.push(id);
-		} else {
-			savedSpellsStorage.current = savedSpellsStorage.current.filter(
-				(saved: number) => saved !== id
-			);
-		}
-	};
 
 	const toggleSection = (level: number) => {
 		if (collapsedSections.has(level)) {
@@ -166,8 +153,8 @@
 								<SpellItem
 									{spell}
 									index={getSpellIndexInLevel(spell, level)}
-									isSaved={isSaved(spell.id)}
-									onToggle={() => toggleSpell(spell.id)}
+									isSaved={isSaved(spell.slug)}
+									onToggle={() => toggleSpell(spell.slug)}
 									class="animate-fade-in"
 									style="animation-delay: {spellIndex * 50}ms"
 								/>
