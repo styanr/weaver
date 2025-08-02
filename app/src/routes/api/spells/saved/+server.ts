@@ -23,6 +23,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				text: `
         SELECT
           spells.id,
+          spells.slug,
           spells.school,
           spells.level,
           spells.title,
@@ -52,6 +53,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		const spells: SpellSlim[] = result.rows.map((item) => ({
 			id: item.id,
+			slug: item.slug,
 			school: item.school,
 			level: item.level,
 			classes: item.classes,

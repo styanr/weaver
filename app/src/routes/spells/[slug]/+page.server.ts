@@ -5,11 +5,9 @@ import { getSpell } from '$lib/spells';
 import type { Spell } from '$lib/types';
 
 export const load: PageServerLoad<{ spell: Spell }> = async ({ params }) => {
-	const id = parseInt(params.id, 10);
-
 	const conn = await connectToDB();
 	try {
-		const spell = await getSpell(conn, id);
+		const spell = await getSpell(conn, params.slug);
 		console.log(spell);
 		if (!spell) {
 			throw error(404, `Spell not found`);

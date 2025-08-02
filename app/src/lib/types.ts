@@ -25,6 +25,7 @@ export interface Spell {
 
 export interface SpellSlim {
 	id: number;
+	slug: string;
 	school: string;
 	level: number;
 	classes: string[];

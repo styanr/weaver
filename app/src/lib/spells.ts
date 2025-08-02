@@ -1,11 +1,12 @@
 import type { PoolClient } from 'pg';
 import type { Spell } from './types';
 
-export const getSpell = async (conn: PoolClient, id: number): Promise<Spell | null> => {
+export const getSpell = async (conn: PoolClient, slug: string): Promise<Spell | null> => {
 	const res = await conn.query(
 		`
         SELECT 
           spells.id,
+          spells.slug,
           spells.school,
           spells.level,
           spells.title,
@@ -21,15 +22,16 @@ export const getSpell = async (conn: PoolClient, id: number): Promise<Spell | nu
         FROM public.spells AS spells
         INNER JOIN spells_classes sc ON spells.id = sc.spell_id 
         INNER JOIN classes c ON sc.class_id = c.id
-        WHERE spells.id = $1
+        WHERE spells.slug = $1
         GROUP BY spells.id
         LIMIT 1`,
-		[id]
+		[slug]
 	);
 
 	return res.rows.length > 0
 		? {
 				id: res.rows[0].id,
+				slug: res.rows[0].slug,
 				school: res.rows[0].school,
 				level: res.rows[0].level,
 				classes: res.rows[0].classes,
