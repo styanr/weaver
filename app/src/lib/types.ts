@@ -8,6 +8,7 @@ export interface Class {
 
 export interface Spell {
 	id: number;
+	slug: string;
 	school: string;
 	level: number;
 	classes: number[];
