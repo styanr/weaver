@@ -5,7 +5,7 @@ import { parse as parsePath, join } from "node:path";
 import * as fs from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { parse } from "@eemeli/yaml";
-import { Spell, Class, Component } from "../weaver/src/lib/types.ts";
+import { Spell, Class, Component } from "../app/src/lib/types.ts";
 import process from "node:process";
 import { createSchema, loadData } from "./db.ts";
 
@@ -265,6 +265,13 @@ const parseComponents = (componentsLine: string): ComponentParseResult => {
     materialPrice,
   };
 };
+// https://gist.github.com/thevangelist/8ff91bac947018c9f3bfaad6487fa149
+const titleToSlug = (name: string): string =>
+  name
+    .replace(/\'/g, "")
+    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    ?.map((x) => x.toLowerCase())
+    .join("-") ?? "";
 
 async function extractSpellFromFile(filePath: string): Promise<Spell> {
   const contents = await fs.readFile(filePath, { encoding: "utf8" });
@@ -304,6 +311,7 @@ async function extractSpellFromFile(filePath: string): Promise<Spell> {
 
   const spell: Spell = {
     id: ++spellCounter,
+    slug: titleToSlug(spellConfig.title),
     school: spellConfig.school,
     level: spellConfig.level,
     classes: spellClassIds,

@@ -1,5 +1,5 @@
 import postgres from "https://deno.land/x/postgresjs/mod.js";
-import { Class, Spell } from "../weaver/src/lib/types.ts";
+import { Class, Spell } from "../app/src/lib/types.ts";
 
 export async function createSchema() {
   const sql = postgres(Deno.env.get("POSTGRES_URL")!);
@@ -60,6 +60,7 @@ export async function createSchema() {
         await tx`
           CREATE TABLE IF NOT EXISTS spells (
             id                   SERIAL           PRIMARY KEY,
+            slug                 TEXT             NOT NULL,
             school               TEXT             NOT NULL,
             level                INTEGER          NOT NULL CHECK (level >= 0),
             title                TEXT             NOT NULL,
@@ -70,7 +71,8 @@ export async function createSchema() {
             distance             TEXT             NOT NULL,
             components           component_type[] NOT NULL DEFAULT '{}',
             material_description TEXT,
-            material_price       INTEGER 
+            material_price       INTEGER ,
+            UNIQUE(slug)
           )
         `;
 
@@ -119,12 +121,13 @@ export async function loadData(classesList: Class[], spellsList: Spell[]) {
 
         await tx`
           INSERT INTO spells (
-            id, school, level,
+            id, slug, school, level,
             title, title_ua, description,
             casting_time, duration, distance,
             components, material_description, material_price
           ) VALUES (
             ${sp.id},
+            ${sp.slug},
             ${sp.school},
             ${sp.level},
             ${sp.title},

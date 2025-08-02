@@ -8,6 +8,7 @@ export interface Class {
 
 export interface Spell {
 	id: number;
+	slug: string;
 	school: string;
 	level: number;
 	classes: number[];
@@ -24,6 +25,7 @@ export interface Spell {
 
 export interface SpellSlim {
 	id: number;
+	slug: string;
 	school: string;
 	level: number;
 	classes: string[];

@@ -21,7 +21,7 @@
 	{style}
 >
 	<a
-		href={`/spells/${spell.id}`}
+		href={`/spells/${spell.slug}`}
 		class="flex flex-1 flex-col-reverse items-center gap-2 no-underline md:flex-row md:gap-10"
 	>
 		<div class="flex flex-col-reverse items-center justify-center gap-3 md:flex-row md:gap-0">

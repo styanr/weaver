@@ -16,15 +16,15 @@ export const load: PageLoad = async ({ fetch }) => {
 			}
 
 			try {
-				const savedSpellIds = JSON.parse(localStorage.getItem('savedSpells') || '[]') as number[];
+				const savedSpellSlugs = JSON.parse(localStorage.getItem('savedSpells') || '[]') as string[];
 
-				if (savedSpellIds.length === 0) {
+				if (savedSpellSlugs.length === 0) {
 					resolve({ items: [], totalCount: 0 });
 					return;
 				}
 
-				const idsParam = savedSpellIds.join(',');
-				const fetchUrl = `/api/spells/saved?ids=${idsParam}`;
+				const slugsParam = savedSpellSlugs.join(',');
+				const fetchUrl = `/api/spells/saved?slugs=${slugsParam}`;
 
 				fetch(fetchUrl)
 					.then((res) => res.json())
@@ -45,6 +45,6 @@ export const load: PageLoad = async ({ fetch }) => {
 
 	const promise = loadSavedSpells();
 	return {
-		savedSpellsResult: browser ? promise : await promise
+		savedSpellsResult: promise
 	};
 };

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import debounce from 'lodash.debounce';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import type { PagedResponse } from '../api/spells/+server';
 	import type { SpellSlim } from '$lib/types';
 	import { LocalStorage } from '$lib/storage.svelte';
@@ -12,6 +12,7 @@
 	import RibbonLink from '$lib/components/RibbonLink.svelte';
 	import Skull from '$lib/components/svg/Skull.svelte';
 	import { parsePositiveIntegerParam } from '$lib/numbers';
+	import { isSaved, toggleSpell } from '$lib/spellStorage.svelte';
 
 	const classFilters = [
 		'бард',
@@ -66,9 +67,7 @@
 		}
 	});
 
-	const savedSpellsStorage = new LocalStorage<number[]>('savedSpells', []);
-
-	const isSaved = (id: number) => savedSpellsStorage.current.includes(id);
+	const savedSpellsStorage = new LocalStorage<string[]>('savedSpells', []);
 
 	const updateDebouncedQuery = debounce((newValue: string) => {
 		debouncedQuery = newValue;
@@ -104,16 +103,6 @@
 			goto(url, { replaceState: true, keepFocus: true, noScroll: false });
 		}
 	});
-
-	const toggleSpell = (id: number) => {
-		if (!savedSpellsStorage.current.includes(id)) {
-			savedSpellsStorage.current.push(id);
-		} else {
-			savedSpellsStorage.current = savedSpellsStorage.current.filter(
-				(saved: number) => saved !== id
-			);
-		}
-	};
 </script>
 
 <svelte:head>
@@ -208,8 +197,8 @@
 				<SpellItem
 					{spell}
 					index={i + 1 + searchResult.pageSize * (searchResult.pageNumber - 1)}
-					isSaved={isSaved(spell.id)}
-					onToggle={() => toggleSpell(spell.id)}
+					isSaved={isSaved(spell.slug)}
+					onToggle={() => toggleSpell(spell.slug)}
 				/>
 			{/each}
 			<Pagination
