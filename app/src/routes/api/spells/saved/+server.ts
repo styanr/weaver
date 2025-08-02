@@ -5,16 +5,25 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const idsParam = url.searchParams.get('ids');
-	if (!idsParam) {
-		return json({ error: 'Missing ids parameter' }, { status: 400 });
+	const slugParam = url.searchParams.get('slugs');
+
+	if (!idsParam && !slugParam) {
+		return json({ error: 'Missing ids and slugs parameter' }, { status: 400 });
 	}
+
 	const ids = idsParam
-		.split(',')
-		.map((v) => Number(v.trim()))
-		.filter((v) => Number.isInteger(v));
-	if (ids.length === 0) {
-		return json([], { status: 200 });
-	}
+		? idsParam
+				.split(',')
+				.map((v) => Number(v.trim()))
+				.filter((v) => Number.isInteger(v))
+		: [];
+
+	const slugs = slugParam
+		? slugParam
+				.split(',')
+				.map((v) => v.trim())
+				.filter((v) => v !== '')
+		: [];
 
 	const conn = await connectToDB();
 	try {
@@ -40,13 +49,23 @@ export const GET: RequestHandler = async ({ url }) => {
 			})
 			.withClause({
 				text: 'INNER JOIN spells_classes sc ON spells.id = sc.spell_id INNER JOIN classes c ON sc.class_id = c.id'
-			})
-			.withClause({
+			});
+
+		if (ids.length > 0) {
+			qb.withClause({
 				text: 'WHERE spells.id = ANY($)',
 				values: [ids]
-			})
-			.withClause({ text: 'GROUP BY spells.id' })
-			.withClause({ text: 'ORDER BY spells.level' });
+			});
+		}
+
+		if (slugs.length > 0) {
+			qb.withClause({
+				text: `${ids.length > 0 ? 'OR' : 'WHERE'} spells.slug = ANY($)`,
+				values: [slugs]
+			});
+		}
+
+		qb.withClause({ text: 'GROUP BY spells.id' }).withClause({ text: 'ORDER BY spells.level' });
 
 		const { text, values } = qb.build();
 		const result = await conn.query({ text, values });
