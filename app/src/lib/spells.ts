@@ -1,9 +1,12 @@
 import type { PoolClient } from 'pg';
 import type { Spell } from './types';
 
-export const getSpell = async (conn: PoolClient, slug: string): Promise<Spell | null> => {
-	const res = await conn.query(
-		`
+export const getSpell = async (
+  conn: PoolClient,
+  slug: string
+): Promise<Spell | null> => {
+  const res = await conn.query(
+    `
         SELECT 
           spells.id,
           spells.slug,
@@ -25,25 +28,25 @@ export const getSpell = async (conn: PoolClient, slug: string): Promise<Spell | 
         WHERE spells.slug = $1
         GROUP BY spells.id
         LIMIT 1`,
-		[slug]
-	);
+    [slug]
+  );
 
-	return res.rows.length > 0
-		? {
-				id: res.rows[0].id,
-				slug: res.rows[0].slug,
-				school: res.rows[0].school,
-				level: res.rows[0].level,
-				classes: res.rows[0].classes,
-				title: res.rows[0].title,
-				title_ua: res.rows[0].title_ua,
-				casting_time: res.rows[0].casting_time,
-				duration: res.rows[0].duration,
-				distance: res.rows[0].distance,
-				components: res.rows[0].components,
-				description: res.rows[0].description,
-				materialDescription: res.rows[0].material_description,
-				materialPrice: res.rows[0].material_price
-			}
-		: null;
+  return res.rows.length > 0
+    ? {
+        id: res.rows[0].id,
+        slug: res.rows[0].slug,
+        school: res.rows[0].school,
+        level: res.rows[0].level,
+        classes: res.rows[0].classes,
+        title: res.rows[0].title,
+        title_ua: res.rows[0].title_ua,
+        casting_time: res.rows[0].casting_time,
+        duration: res.rows[0].duration,
+        distance: res.rows[0].distance,
+        components: res.rows[0].components,
+        description: res.rows[0].description,
+        materialDescription: res.rows[0].material_description,
+        materialPrice: res.rows[0].material_price,
+      }
+    : null;
 };

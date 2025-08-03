@@ -1,14 +1,14 @@
 <script lang="ts">
-	import '../app.css';
+  import '../app.css';
 
-	let { children } = $props();
+  let { children } = $props();
 </script>
 
 <svelte:head>
-	<title>Weaver</title>
+  <title>Weaver</title>
 </svelte:head>
 <div
-	class="relative m-auto flex max-w-4xl flex-col items-center p-5 font-garamond text-xl md:text-2xl"
+  class="relative m-auto flex max-w-4xl flex-col items-center p-5 font-garamond text-xl md:text-2xl"
 >
-	{@render children()}
+  {@render children()}
 </div>
