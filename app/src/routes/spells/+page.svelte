@@ -25,7 +25,10 @@
     'чарівник',
   ];
 
-  const levelFilters = Array.from({ length: 10 }, (_, i) => i);
+  const levelFilters = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const levelFilterLabels = levelFilters.map((f) =>
+    f === 0 ? 'Замовляння' : f.toString()
+  );
 
   const query = $derived(page.url.searchParams.get('query'));
   const paramClass = $derived(page.url.searchParams.get('class'));
@@ -70,8 +73,6 @@
       }
     }
   });
-
-  const savedSpellsStorage = new LocalStorage<string[]>('savedSpells', []);
 
   const updateDebouncedQuery = debounce((newValue: string) => {
     debouncedQuery = newValue;
@@ -158,9 +159,9 @@
       bind:value={inputValue}
     />
   </label>
-  <form class="filter mb-5 gap-y-2">
+  <form class="mb-5 gap-y-2 filter">
     <input
-      class="btn btn-square text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+      class="btn btn-square inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
       type="reset"
       value="×"
       onclick={() => (selectedClass = null)}
@@ -168,7 +169,7 @@
 
     {#each classFilters as c}
       <input
-        class="btn text-base capitalize inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 text-base capitalize !transition-all"
         type="radio"
         name="class"
         aria-label={c}
@@ -178,9 +179,9 @@
     {/each}
   </form>
 
-  <form class="filter mb-6 gap-y-2">
+  <form class="mb-6 gap-y-2 filter">
     <input
-      class="btn btn-square text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+      class="btn btn-square inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
       type="reset"
       value="×"
       onclick={() => (selectedLevel = null)}
@@ -188,10 +189,10 @@
 
     {#each levelFilters as l}
       <input
-        class="btn text-base inset-shadow-base-content !transition-all hover:inset-shadow-sm/30"
+        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
         type="radio"
         name="level"
-        aria-label={l.toString()}
+        aria-label={levelFilterLabels[l]}
         value={l}
         bind:group={selectedLevel}
       />
@@ -244,18 +245,18 @@
       />
     {:else}
       <div class="flex flex-col items-center justify-center py-16">
-        <Skull class="mb-5 aspect-square h-23 text-base-content/70" />
+        <Skull class="h-23 text-base-content/70 mb-5 aspect-square" />
         <h3 class="mb-2 text-2xl font-bold">Згадок немає...</h3>
-        <p class="text-center text-base-content-500">
+        <p class="text-base-content-500 text-center">
           Можливо, варто створити власні чари?
         </p>
       </div>
     {/if}
   {:else}
     <div class="flex flex-col items-center justify-center py-16">
-      <Skull class="mb-5 aspect-square h-23 text-base-content/70" />
+      <Skull class="h-23 text-base-content/70 mb-5 aspect-square" />
       <h3 class="mb-2 text-2xl font-bold">Згадок немає...</h3>
-      <p class="text-center text-base-content-500">
+      <p class="text-base-content-500 text-center">
         Можливо, варто створити власні чари?
       </p>
     </div>
