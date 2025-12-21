@@ -3,6 +3,8 @@ import { QueryBuilder } from '$lib/query';
 import type { SpellSlim } from '$lib/types';
 import { parsePositiveIntegerParam } from '$lib/numbers';
 import { json, type RequestHandler } from '@sveltejs/kit';
+import { searchParams } from '../../spells/common';
+import { deserializeArray } from '$lib/searchParams';
 
 const PAGE_SIZE = 15;
 
@@ -16,10 +18,19 @@ export interface PagedResponse<T> {
 export const GET: RequestHandler = async ({ url }) => {
   const conn = await connectToDB();
 
-  const searchQueryParam = url.searchParams.get('query') ?? '';
-  const classParam = url.searchParams.get('class');
-  const levelParam = parsePositiveIntegerParam(url.searchParams.get('level'));
-  const page = parsePositiveIntegerParam(url.searchParams.get('page')) ?? 1;
+  const searchQueryParam = url.searchParams.get(searchParams.query) ?? '';
+  const classesParam = deserializeArray(
+    url.searchParams.get(searchParams.classes)
+  );
+
+  const levelsParam = deserializeArray(
+    url.searchParams.get(searchParams.levels)
+  )
+    .map(parsePositiveIntegerParam)
+    .filter((n) => n !== null);
+
+  const page =
+    parsePositiveIntegerParam(url.searchParams.get(searchParams.page)) ?? 1;
 
   try {
     const filterParts: string[] = [];
@@ -29,13 +40,20 @@ export const GET: RequestHandler = async ({ url }) => {
       filterParts.push('title_ua ILIKE $ OR title ILIKE $');
       filterValues.push(`%${searchQueryParam}%`, `%${searchQueryParam}%`);
     }
-    if (classParam) {
-      filterParts.push('c.name_ua = $');
-      filterValues.push(classParam);
+    if (classesParam.length !== 0) {
+      filterParts.push(`
+        spells.id IN (
+          SELECT sc.spell_id 
+          FROM spells_classes sc 
+          JOIN classes c ON sc.class_id = c.id 
+          WHERE c.name_ua = ANY($)
+        )
+      `);
+      filterValues.push(classesParam);
     }
-    if (levelParam !== null) {
-      filterParts.push('spells.level = $');
-      filterValues.push(levelParam);
+    if (levelsParam.length !== 0) {
+      filterParts.push('spells.level = ANY($)');
+      filterValues.push(levelsParam);
     }
 
     const filterClause =
@@ -49,14 +67,14 @@ export const GET: RequestHandler = async ({ url }) => {
       values: [PAGE_SIZE * (page - 1), PAGE_SIZE],
     };
     const joinClause = {
-      text: 'INNER JOIN spells_classes sc ON spells.id = sc.spell_id INNER JOIN classes c ON sc.class_id = c.id',
+      text: 'LEFT JOIN spells_classes sc ON spells.id = sc.spell_id LEFT JOIN classes c ON sc.class_id = c.id',
     };
     const aggregateClause = { text: 'GROUP BY spells.id' };
 
     const countQueryBuilder = new QueryBuilder().withClause({
-      text: 'SELECT COUNT(*) FROM public.spells AS spells',
+      text: 'SELECT COUNT(DISTINCT spells.id) FROM public.spells AS spells',
     });
-    if (classParam) countQueryBuilder.withClause(joinClause);
+    if (classesParam.length !== 0) countQueryBuilder.withClause(joinClause);
     const countQuery = countQueryBuilder.withClause(filterClause).build();
 
     const searchQueryBuilder = new QueryBuilder().withClause({

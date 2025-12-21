@@ -13,6 +13,8 @@
   import Skull from '$lib/components/svg/Skull.svelte';
   import { parsePositiveIntegerParam } from '$lib/numbers';
   import { isSaved, toggleSpell } from '$lib/spellStorage.svelte';
+  import { deserializeArray, serializeArray } from '$lib/searchParams';
+  import { searchParams } from './common';
 
   const classFilters = [
     'бард',
@@ -30,19 +32,24 @@
     f === 0 ? 'Замовляння' : f.toString()
   );
 
-  const query = $derived(page.url.searchParams.get('query'));
-  const paramClass = $derived(page.url.searchParams.get('class'));
-  const paramLevel = $derived(page.url.searchParams.get('level'));
-  const paramPage = $derived(page.url.searchParams.get('page'));
+  const query = $derived(page.url.searchParams.get(searchParams.query));
+  const classesParam = $derived(
+    page.url.searchParams.get(searchParams.classes)
+  );
+  const levelsParam = $derived(page.url.searchParams.get(searchParams.levels));
+  const pageParam = $derived(page.url.searchParams.get(searchParams.page));
+
+  const classes = deserializeArray(classesParam);
+  const levels = deserializeArray(levelsParam)
+    .map(parsePositiveIntegerParam)
+    .filter((n) => n != null);
 
   let inputValue = $state<string | null>(query);
   let debouncedQuery = $state(query ?? '');
-  let selectedClass = $state<string | null>(paramClass);
-  let selectedLevel = $state<number | null>(
-    parsePositiveIntegerParam(paramLevel)
-  );
+  let selectedClasses = $state<string[]>(classes);
+  let selectedLevels = $state<number[] | null>(levels);
   let selectedPage = $state<number | null>(
-    parsePositiveIntegerParam(paramPage)
+    parsePositiveIntegerParam(pageParam)
   );
 
   let isLoading = $state(false);
@@ -89,8 +96,8 @@
   $effect(() => {
     if (
       inputValue != query ||
-      selectedClass != paramClass ||
-      selectedLevel != paramLevel
+      selectedClasses != deserializeArray(classesParam) ||
+      selectedLevels != levelsParam
     ) {
       selectedPage = 1;
     }
@@ -101,16 +108,18 @@
     const params = url.searchParams;
 
     debouncedQuery
-      ? params.set('query', debouncedQuery)
-      : params.delete('query');
-    selectedClass ? params.set('class', selectedClass) : params.delete('class');
-    selectedLevel !== null
-      ? params.set('level', String(selectedLevel))
-      : params.delete('level');
+      ? params.set(searchParams.query, debouncedQuery)
+      : params.delete(searchParams.query);
+    selectedClasses && selectedClasses.length !== 0
+      ? params.set(searchParams.classes, serializeArray(selectedClasses))
+      : params.delete(searchParams.classes);
+    selectedLevels !== null
+      ? params.set(searchParams.levels, String(selectedLevels))
+      : params.delete(searchParams.levels);
 
     selectedPage && selectedPage > 1
-      ? params.set('page', String(selectedPage))
-      : params.delete('page');
+      ? params.set(searchParams.page, String(selectedPage))
+      : params.delete(searchParams.page);
 
     if (page.url.href != url.href) {
       goto(url, { replaceState: true, keepFocus: true, noScroll: false });
@@ -159,44 +168,44 @@
       bind:value={inputValue}
     />
   </label>
-  <form class="mb-5 gap-y-2 filter">
-    <input
-      class="btn btn-square inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
-      type="reset"
-      value="×"
-      onclick={() => (selectedClass = null)}
-    />
-
+  <form class="mb-5 flex gap-1">
     {#each classFilters as c}
       <input
-        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 text-base capitalize !transition-all"
-        type="radio"
+        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 checked:text-base-content checked:bg-base-300 checked:border-base-content/50 outline-base-content checked:shadow-base-content text-base capitalize shadow-none !transition-all"
+        type="checkbox"
         name="class"
         aria-label={c}
         value={c}
-        bind:group={selectedClass}
+        bind:group={selectedClasses}
       />
     {/each}
-  </form>
 
-  <form class="mb-6 gap-y-2 filter">
     <input
       class="btn btn-square inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
       type="reset"
       value="×"
-      onclick={() => (selectedLevel = null)}
+      onclick={() => (selectedClasses = [])}
     />
+  </form>
 
+  <form class="mb-6 flex gap-1">
     {#each levelFilters as l}
       <input
-        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
-        type="radio"
+        class="btn inset-shadow-base-content hover:inset-shadow-sm/30 checked:text-base-content checked:bg-base-300 checked:border-base-content/50 outline-base-content checked:shadow-base-content text-base capitalize shadow-none !transition-all"
+        type="checkbox"
         name="level"
         aria-label={levelFilterLabels[l]}
         value={l}
-        bind:group={selectedLevel}
+        bind:group={selectedLevels}
       />
     {/each}
+
+    <input
+      class="btn btn-square inset-shadow-base-content hover:inset-shadow-sm/30 text-base !transition-all"
+      type="reset"
+      value="×"
+      onclick={() => (selectedLevels = [])}
+    />
   </form>
 
   {#if isLoading}

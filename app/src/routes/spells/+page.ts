@@ -9,6 +9,7 @@ interface SearchResult {
   pageSize: number;
 }
 
+
 export const load: PageLoad = async ({ fetch, url }) => {
   // TODO: fix server loading
   if (!browser) return;
