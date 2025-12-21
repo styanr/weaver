@@ -44,9 +44,9 @@
 <SaveButton
   isSaved={isSaved(spell.slug)}
   onToggle={() => toggleSpell(spell.slug)}
-  class="fixed right-5 bottom-0 mb-6 border-base-content/20 p-7 shadow-xl/30 shadow-base-content md:hidden"
+  class="border-base-content/20 shadow-xl/30 shadow-base-content fixed bottom-0 right-5 mb-6 p-7 md:hidden"
 />
-<div class="mx-auto mt-10 py-6 pb-15 md:pb-0">
+<div class="pb-15 mx-auto mt-10 py-6 md:pb-0">
   <div class="flex w-full justify-center">
     <div
       class="relative mb-8 flex w-fit flex-col justify-center gap-10 md:flex-row"
@@ -59,11 +59,11 @@
       <SaveButton
         isSaved={isSaved(spell.slug)}
         onToggle={() => toggleSpell(spell.slug)}
-        class="absolute -top-0 -right-20 hidden md:block"
+        class="absolute -right-20 -top-0 hidden md:block"
       />
     </div>
   </div>
-  <div class="mb-6 text-center text-base-content/75 italic">
+  <div class="text-base-content/75 mb-6 text-center italic">
     <span class="font-bold">
       {spell.level === 0 ? 'Замовляння' : `${spell.level} рівень`} ·
     </span>
@@ -75,35 +75,35 @@
   </div>
 
   <div class="mb-8 flex items-center justify-center">
-    <div class="h-px flex-1 bg-base-content/20"></div>
-    <div class="mx-4 text-base-content/40 select-none">⁂</div>
-    <div class="h-px flex-1 bg-base-content/20"></div>
+    <div class="bg-base-content/20 h-px flex-1"></div>
+    <div class="text-base-content/40 mx-4 select-none">⁂</div>
+    <div class="bg-base-content/20 h-px flex-1"></div>
   </div>
 
   <table class="m-auto mb-8 w-[80%] border-collapse">
     <tbody>
-      <tr class="border-b border-base-content/10">
+      <tr class="border-base-content/10 border-b">
         <th
           class="small-caps py-3 pr-8 text-left font-medium tracking-wide opacity-75"
           >Школа</th
         >
         <td class="py-3 text-left">{spell.school}</td>
       </tr>
-      <tr class="border-b border-base-content/10">
+      <tr class="border-base-content/10 border-b">
         <th
           class="small-caps py-3 pr-8 text-left font-medium tracking-wide opacity-75"
           >Час створення</th
         >
         <td class="py-3 text-left">{spell.casting_time}</td>
       </tr>
-      <tr class="border-b border-base-content/10">
+      <tr class="border-base-content/10 border-b">
         <th
           class="small-caps py-3 pr-8 text-left font-medium tracking-wide opacity-75"
           >Відстань</th
         >
         <td class="py-3 text-left">{spell.distance}</td>
       </tr>
-      <tr class="border-b border-base-content/10">
+      <tr class="border-base-content/10 border-b">
         <th
           class="small-caps py-3 pr-8 text-left font-medium tracking-wide opacity-75"
           >Складові</th
@@ -123,19 +123,19 @@
   </table>
 
   {#if spell.materialDescription}
-    <div class="mt-8 mb-4 flex items-center justify-center">
-      <div class="h-px flex-1 bg-base-content/15"></div>
+    <div class="mb-4 mt-8 flex items-center justify-center">
+      <div class="bg-base-content/15 h-px flex-1"></div>
       <div
-        class="small-caps mx-4 text-base tracking-widest text-base-content/50"
+        class="small-caps text-base-content/50 mx-4 text-base tracking-widest"
       >
         Матеріали
       </div>
-      <div class="h-px flex-1 bg-base-content/15"></div>
+      <div class="bg-base-content/15 h-px flex-1"></div>
     </div>
     <div class="mb-6 text-center">
       <Markdown
         text={spell.materialDescription}
-        class="inline text-base-content/80 italic"
+        class="text-base-content/80 inline italic"
       />
     </div>
   {/if}

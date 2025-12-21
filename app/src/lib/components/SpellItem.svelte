@@ -24,7 +24,7 @@
 </script>
 
 <div
-  class="list-row md:pr-12-12 relative mb-5 flex items-start bg-base-100 pl-10 transition-all hover:scale-105 hover:shadow-xl md:items-center md:gap-10 {className}"
+  class="list-row md:pr-12-12 bg-base-100 relative mb-5 flex items-start pl-10 transition-all hover:scale-105 hover:shadow-xl md:items-center md:gap-10 {className}"
   {style}
 >
   <a
@@ -34,7 +34,7 @@
     <div
       class="flex flex-col-reverse items-center justify-center gap-3 md:flex-row md:gap-0"
     >
-      <div class="text-xl font-bold whitespace-nowrap md:w-30 md:text-3xl">
+      <div class="md:w-30 whitespace-nowrap text-xl font-bold md:text-3xl">
         {romanize(index)}
       </div>
 
@@ -49,11 +49,11 @@
     <div class="flex w-full flex-col">
       <div class="flex items-start justify-between">
         <h3
-          class="mt-2 mb-3 pr-13 text-3xl font-bold first-letter:mr-0.5 first-letter:inline-block first-letter:align-text-bottom first-letter:text-4xl/1 first-letter:leading-none first-letter:font-extrabold"
+          class="pr-13 first-letter:text-4xl/1 mb-3 mt-2 text-3xl font-bold first-letter:mr-0.5 first-letter:inline-block first-letter:align-text-bottom first-letter:font-extrabold first-letter:leading-none"
         >
           {spell.title_ua}
           <div
-            class="small-caps mt-4 text-xl font-normal text-base-content-500 md:mt-0 md:ml-1 md:inline md:text-2xl"
+            class="small-caps text-base-content-500 mt-4 text-xl font-normal md:ml-1 md:mt-0 md:inline md:text-2xl"
           >
             "{spell.title}"
           </div>
@@ -66,7 +66,11 @@
           {/each}
         </div>
         <div>
-          <span class="font-bold">{spell.level}</span> рівень
+          {#if spell.level === 0}
+            <span class="font-bold"> Замовляння </span>
+          {:else}
+            <span class="font-bold">{spell.level}</span> рівень
+          {/if}
         </div>
         {#if spell.materialDescription}
           <div>
@@ -76,7 +80,7 @@
       </div>
     </div>
   </a>
-  <div class="absolute top-4 right-4 md:relative md:top-auto md:right-auto">
+  <div class="absolute right-4 top-4 md:relative md:right-auto md:top-auto">
     <SaveButton {isSaved} {onToggle} />
   </div>
 </div>
