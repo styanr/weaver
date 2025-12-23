@@ -1,6 +1,6 @@
 const SEPARATOR = ',';
 
-export const serializeArray = (arr: readonly string[]) => {
+export const serializeArray = (arr: readonly string[] | readonly number[]) => {
   return arr.join(SEPARATOR);
 };
 

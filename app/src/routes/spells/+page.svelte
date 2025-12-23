@@ -113,8 +113,8 @@
     selectedClasses && selectedClasses.length !== 0
       ? params.set(searchParams.classes, serializeArray(selectedClasses))
       : params.delete(searchParams.classes);
-    selectedLevels !== null
-      ? params.set(searchParams.levels, String(selectedLevels))
+    selectedLevels && selectedLevels.length !== 0
+      ? params.set(searchParams.levels, serializeArray(selectedLevels))
       : params.delete(searchParams.levels);
 
     selectedPage && selectedPage > 1
@@ -168,7 +168,7 @@
       bind:value={inputValue}
     />
   </label>
-  <form class="mb-5 flex gap-1">
+  <form class="mb-5 flex flex-wrap gap-1">
     {#each classFilters as c}
       <input
         class="btn inset-shadow-base-content hover:inset-shadow-sm/30 checked:text-base-content checked:bg-base-300 checked:border-base-content/50 outline-base-content checked:shadow-base-content text-base capitalize shadow-none !transition-all"
@@ -188,7 +188,7 @@
     />
   </form>
 
-  <form class="mb-6 flex gap-1">
+  <form class="mb-6 flex flex-wrap gap-1">
     {#each levelFilters as l}
       <input
         class="btn inset-shadow-base-content hover:inset-shadow-sm/30 checked:text-base-content checked:bg-base-300 checked:border-base-content/50 outline-base-content checked:shadow-base-content text-base capitalize shadow-none !transition-all"
