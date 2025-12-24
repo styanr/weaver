@@ -25,6 +25,15 @@
 
 <svelte:head>
   <title>{spell.title_ua} · Weaver</title>
+  <meta property="og:title" content={spell.title_ua} />
+  <meta
+    property="og:url"
+    content={`${window.location}/spells/${spell.slug}/`}
+  />
+  <meta
+    property="og:description"
+    content={`${110 > spell.description.length - 1 ? spell.description.substring(0, 110) + '...' : spell.description}`}
+  />
 </svelte:head>
 
 <RibbonLink
