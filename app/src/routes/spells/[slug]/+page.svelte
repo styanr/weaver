@@ -6,6 +6,7 @@
   import RibbonLink from '$lib/components/RibbonLink.svelte';
   import SaveButton from '$lib/components/SaveButton.svelte';
   import { isSaved, toggleSpell } from '$lib/spellStorage.svelte';
+  import { page } from '$app/state';
   let { data }: PageProps = $props();
   let spell = data.spell;
 
@@ -21,19 +22,30 @@
       .map((c) => lookup[c])
       .toArray();
   };
+
 </script>
 
 <svelte:head>
   <title>{spell.title_ua} · Weaver</title>
+  <meta name="description" content={spell.description.length > 155 ? spell.description.substring(0, 155) + '...' : spell.description} />
+  
+  <link rel="canonical" href="{page.url.origin}/spells/{spell.slug}" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Weaver" />
   <meta property="og:title" content={spell.title_ua} />
-  <meta
-    property="og:url"
-    content={`${window.location}/spells/${spell.slug}/`}
-  />
-  <meta
-    property="og:description"
-    content={`${110 > spell.description.length - 1 ? spell.description.substring(0, 110) + '...' : spell.description}`}
-  />
+  <meta property="og:description" content={spell.description.length > 110 ? spell.description.substring(0, 110) + '...' : spell.description} />
+  <meta property="og:url" content="{page.url.origin}/spells/{spell.slug}" />
+  <meta property="og:image" content="{page.url.origin}/api/og/{spell.slug}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{spell.title_ua} - {spell.title}" />
+  
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={spell.title_ua} />
+  <meta name="twitter:description" content={spell.description.length > 110 ? spell.description.substring(0, 110) + '...' : spell.description} />
+  <meta name="twitter:image" content="{page.url.origin}/api/og/{spell.slug}" />
+  <meta name="twitter:image:alt" content="{spell.title_ua} - {spell.title}" />
 </svelte:head>
 
 <RibbonLink

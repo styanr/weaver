@@ -59,13 +59,14 @@
   --color-base-content-500: oklch(47% 0.027 313.2);
 }
 
+/* TODO */
 @layer base {
   :root,
   [data-theme] {
-    background: repeat url(/img/paper-texture.png) 0 0;
-    background-color: var(--root-bg, var(--color-base-100));
-    background-blend-mode: hard-light;
-    color: var(--color-base-content);
+    background: repeat url(lib/assets/img/paper-texture.png) 0 0 !important;
+    background-color: var(--root-bg, var(--color-base-100)) !important;
+    background-blend-mode: hard-light !important;
+    color: var(--color-base-content) !important;
   }
   br {
     @apply my-2 block;

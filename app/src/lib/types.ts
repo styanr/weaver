@@ -11,7 +11,7 @@ export interface Spell {
   slug: string;
   school: string;
   level: number;
-  classes: number[];
+  classes: string[];
   title: string;
   title_ua: string;
   description: string;

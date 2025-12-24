@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { navigating, page } from '$app/state';
+  import { page } from '$app/state';
   import debounce from 'lodash.debounce';
   import { onDestroy } from 'svelte';
   import type { PagedResponse } from '../api/spells/+server';
