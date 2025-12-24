@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/state';
+  import { navigating, page } from '$app/state';
   import debounce from 'lodash.debounce';
   import { onDestroy } from 'svelte';
   import type { PagedResponse } from '../api/spells/+server';
   import type { SpellSlim } from '$lib/types';
-  import { LocalStorage } from '$lib/storage.svelte';
   import { goto } from '$app/navigation';
   import Pagination from '$lib/components/Pagination.svelte';
   import Header from '$lib/components/Header.svelte';
@@ -15,6 +14,7 @@
   import { isSaved, toggleSpell } from '$lib/spellStorage.svelte';
   import { deserializeArray, serializeArray } from '$lib/searchParams';
   import { searchParams } from './common';
+  import type { PageProps } from './$types';
 
   const classFilters = [
     'бард',
@@ -32,12 +32,10 @@
     f === 0 ? 'Замовляння' : f.toString()
   );
 
-  const query = $derived(page.url.searchParams.get(searchParams.query));
-  const classesParam = $derived(
-    page.url.searchParams.get(searchParams.classes)
-  );
-  const levelsParam = $derived(page.url.searchParams.get(searchParams.levels));
-  const pageParam = $derived(page.url.searchParams.get(searchParams.page));
+  const query = page.url.searchParams.get(searchParams.query);
+  const classesParam = page.url.searchParams.get(searchParams.classes);
+  const levelsParam = page.url.searchParams.get(searchParams.levels);
+  const pageParam = page.url.searchParams.get(searchParams.page);
 
   const classes = deserializeArray(classesParam);
   const levels = deserializeArray(levelsParam)
@@ -52,34 +50,10 @@
     parsePositiveIntegerParam(pageParam)
   );
 
-  let isLoading = $state(false);
-  let lastError = $state<string | null>(null);
-  let searchResult = $state<PagedResponse<SpellSlim> | null>(null);
-
-  const { data } = $props();
-
-  $effect(() => {
-    if (data.searchResult) {
-      isLoading = true;
-      lastError = null;
-
-      const handleResult = (result: PagedResponse<SpellSlim>) => {
-        searchResult = result;
-        isLoading = false;
-      };
-
-      const handleError = (error: any) => {
-        lastError = error.message || 'An error occurred';
-        isLoading = false;
-      };
-
-      if (data.searchResult instanceof Promise) {
-        data.searchResult.then(handleResult).catch(handleError);
-      } else {
-        handleResult(data.searchResult);
-      }
-    }
-  });
+  const { data }: PageProps = $props();
+  let searchResult = $derived<PagedResponse<SpellSlim> | null>(
+    data.searchResult instanceof Promise ? null : data.searchResult
+  );
 
   const updateDebouncedQuery = debounce((newValue: string) => {
     debouncedQuery = newValue;
@@ -137,7 +111,6 @@
   position="right"
   class="absolute -top-0 right-5"
 />
-
 <div class="list relative mt-10 w-full py-6 text-2xl md:mt-0">
   <Header
     title="Зміст"
@@ -208,59 +181,24 @@
     />
   </form>
 
-  {#if isLoading}
-    <div
-      class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
-    >
-      <svg class="h-12 w-12 animate-spin" viewBox="0 0 24 24">
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-          fill="none"
-        />
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-        />
-      </svg>
-    </div>
-  {/if}
-
-  {#if lastError}
-    <span style="color: red;">Помилка: {lastError}</span>
-  {:else if searchResult}
-    {#if searchResult.items.length > 0}
-      {#each searchResult.items as spell, i}
-        <SpellItem
-          {spell}
-          index={i + 1 + searchResult.pageSize * (searchResult.pageNumber - 1)}
-          isSaved={isSaved(spell.slug)}
-          onToggle={() => toggleSpell(spell.slug)}
-        />
-      {/each}
-      <Pagination
-        pageSize={searchResult.pageSize}
-        currentPage={searchResult.pageNumber}
-        totalCount={searchResult.totalCount}
-        class="mt-5"
-        onChange={(newPage: number) => {
-          selectedPage = newPage;
-        }}
+  {#if searchResult && searchResult.items.length > 0}
+    {#each searchResult.items as spell, i}
+      <SpellItem
+        {spell}
+        index={i + 1 + searchResult.pageSize * (searchResult.pageNumber - 1)}
+        isSaved={isSaved(spell.slug)}
+        onToggle={() => toggleSpell(spell.slug)}
       />
-    {:else}
-      <div class="flex flex-col items-center justify-center py-16">
-        <Skull class="h-23 text-base-content/70 mb-5 aspect-square" />
-        <h3 class="mb-2 text-2xl font-bold">Згадок немає...</h3>
-        <p class="text-base-content-500 text-center">
-          Можливо, варто створити власні чари?
-        </p>
-      </div>
-    {/if}
+    {/each}
+    <Pagination
+      pageSize={searchResult.pageSize}
+      currentPage={searchResult.pageNumber}
+      totalCount={searchResult.totalCount}
+      class="mt-5"
+      onChange={(newPage: number) => {
+        selectedPage = newPage;
+      }}
+    />
   {:else}
     <div class="flex flex-col items-center justify-center py-16">
       <Skull class="h-23 text-base-content/70 mb-5 aspect-square" />

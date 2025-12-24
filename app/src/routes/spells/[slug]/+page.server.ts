@@ -8,7 +8,6 @@ export const load: PageServerLoad<{ spell: Spell }> = async ({ params }) => {
   const conn = await connectToDB();
   try {
     const spell = await getSpell(conn, params.slug);
-    console.log(spell);
     if (!spell) {
       throw error(404, `Spell not found`);
     }
