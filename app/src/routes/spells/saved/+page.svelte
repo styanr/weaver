@@ -2,13 +2,18 @@
   import Header from '$lib/components/Header.svelte';
   import RibbonLink from '$lib/components/RibbonLink.svelte';
   import SpellItem from '$lib/components/SpellItem.svelte';
-  import { ChevronDown } from 'lucide-svelte';
+  import { ChevronDown, Minus, Plus } from 'lucide-svelte';
   import { slide } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
   import type { SpellSlim } from '$lib/types.js';
   import {
     clearUpStorage,
+    getPreparedLimit,
+    isAlwaysPrepared,
+    isPrepared,
     isSaved,
+    setPreparedLimit,
+    togglePrepared,
     toggleSpell,
   } from '$lib/spellStorage.svelte.js';
 
@@ -27,17 +32,40 @@
   let lastError = $state<string | null>(null);
   let savedSpellsResult = $state<SavedSpellsResult | null>(null);
   let collapsedSections = $state<Set<number>>(new Set());
+  let showPreparedOnly = $state(false);
+
+  const isCastable = (spell: SpellSlim) =>
+    spell.level === 0 || isPrepared(spell.slug) || isAlwaysPrepared(spell.slug);
+
+  const preparedCount = $derived(
+    savedSpellsResult?.items.filter(
+      (spell) =>
+        spell.level > 0 &&
+        isPrepared(spell.slug) &&
+        !isAlwaysPrepared(spell.slug)
+    ).length ?? 0
+  );
+  const preparedLimit = $derived(getPreparedLimit());
+  const isOverLimit = $derived(
+    preparedLimit !== null && preparedCount > preparedLimit
+  );
+
+  const changeLimit = (delta: number) => {
+    setPreparedLimit(Math.max((preparedLimit ?? 0) + delta, 0));
+  };
 
   const spellsByLevel = $derived.by(() => {
     if (!savedSpellsResult?.items) return {};
 
     const grouped: SpellsByLevel = {};
-    savedSpellsResult.items.forEach((spell) => {
-      if (!grouped[spell.level]) {
-        grouped[spell.level] = [];
-      }
-      grouped[spell.level].push(spell);
-    });
+    savedSpellsResult.items
+      .filter((spell) => !showPreparedOnly || isCastable(spell))
+      .forEach((spell) => {
+        if (!grouped[spell.level]) {
+          grouped[spell.level] = [];
+        }
+        grouped[spell.level].push(spell);
+      });
 
     Object.keys(grouped).forEach((level) => {
       grouped[Number(level)].sort((a, b) =>
@@ -143,6 +171,45 @@
     <span style="color: red;">Помилка: {lastError}</span>
   {:else if savedSpellsResult}
     {#if savedSpellsResult.items.length > 0}
+      <div
+        class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border-2 border-base-content/5 bg-base-200 p-4 px-6"
+      >
+        <div class="flex items-center gap-3">
+          <span>Підготовлено</span>
+          <button
+            class="btn btn-circle h-12 w-12 inset-shadow-base-content hover:inset-shadow-sm/30"
+            aria-label="Зменшити ліміт"
+            disabled={!preparedLimit}
+            onclick={() => changeLimit(-1)}
+          >
+            <Minus class="h-5 w-5" />
+          </button>
+          <span class="min-w-16 text-center font-bold tabular-nums">
+            {preparedCount} / {preparedLimit ?? '?'}
+          </span>
+          <button
+            class="btn btn-circle h-12 w-12 inset-shadow-base-content hover:inset-shadow-sm/30"
+            aria-label="Збільшити ліміт"
+            onclick={() => changeLimit(1)}
+          >
+            <Plus class="h-5 w-5" />
+          </button>
+        </div>
+        <button
+          class="btn h-12 rounded-full px-6 text-xl font-normal inset-shadow-base-content hover:inset-shadow-sm/30"
+          class:btn-active={showPreparedOnly}
+          aria-pressed={showPreparedOnly}
+          onclick={() => (showPreparedOnly = !showPreparedOnly)}
+        >
+          Лише підготовлені
+        </button>
+        {#if isOverLimit}
+          <p class="w-full text-error" role="alert">
+            Підготовлено більше чарів, ніж дозволяє ліміт.
+          </p>
+        {/if}
+      </div>
+
       {#each Object.keys(spellsByLevel).sort((a, b) => Number(a) - Number(b)) as levelStr}
         {@const level = Number(levelStr)}
         {@const spells = spellsByLevel[level]}
@@ -180,6 +247,11 @@
                   index={getSpellIndexInLevel(spell, level)}
                   isSaved={isSaved(spell.slug)}
                   onToggle={() => toggleSpell(spell.slug)}
+                  isPrepared={isPrepared(spell.slug)}
+                  isAlwaysPrepared={isAlwaysPrepared(spell.slug)}
+                  onPrepareToggle={isSaved(spell.slug)
+                    ? () => togglePrepared(spell.slug)
+                    : undefined}
                   class="animate-fade-in"
                   style="animation-delay: {spellIndex * 50}ms"
                 />

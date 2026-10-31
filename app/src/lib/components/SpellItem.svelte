@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SpellSlim } from '$lib/types';
   import Markdown from './Markdown.svelte';
+  import PrepareButton from './PrepareButton.svelte';
   import SaveButton from './SaveButton.svelte';
   import { romanize } from '$lib/numbers';
 
@@ -9,6 +10,9 @@
     index: number;
     isSaved: boolean;
     onToggle: () => void;
+    isPrepared?: boolean;
+    isAlwaysPrepared?: boolean;
+    onPrepareToggle?: () => void;
     class?: string;
     style?: string;
   }
@@ -18,6 +22,9 @@
     index,
     isSaved,
     onToggle,
+    isPrepared = false,
+    isAlwaysPrepared = false,
+    onPrepareToggle = undefined,
     class: className = '',
     style = '',
   }: Props = $props();
@@ -80,7 +87,16 @@
       </div>
     </div>
   </a>
-  <div class="absolute right-4 top-4 md:relative md:right-auto md:top-auto">
+  <div
+    class="absolute right-4 top-4 flex flex-col gap-2 md:relative md:right-auto md:top-auto"
+  >
     <SaveButton {isSaved} {onToggle} />
+    {#if onPrepareToggle && spell.level > 0}
+      <PrepareButton
+        isPrepared={isPrepared || isAlwaysPrepared}
+        disabled={isAlwaysPrepared}
+        onToggle={onPrepareToggle}
+      />
+    {/if}
   </div>
 </div>
